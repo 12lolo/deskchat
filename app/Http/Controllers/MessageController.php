@@ -62,11 +62,12 @@ class MessageController extends Controller
             return response()->json(['ok'=>false,'error'=>'profanity_blocked'], 422);
         }
 
+        $clientIp = method_exists($r, 'getClientIp') ? $r->getClientIp() : $r->ip();
         $msg = Message::create([
             'handle'    => $handle ?: null,
             'content'   => $content,
             'device_id' => Str::substr($device, 0, 64),
-            'ip_hmac'   => IpPrivacy::hmac($r->ip()),
+            'ip_hmac'   => IpPrivacy::hmac($clientIp),
         ]);
 
         return response()->json([

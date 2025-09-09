@@ -25,7 +25,8 @@ class AppServiceProvider extends ServiceProvider
     {
         RateLimiter::for('chat', function (Request $r) {
             $device = $r->header('X-Device-Id') ?: 'no-device';
-            $ipKey  = IpPrivacy::hmac($r->ip());
+            $ip     = method_exists($r, 'getClientIp') ? $r->getClientIp() : $r->ip();
+            $ipKey  = IpPrivacy::hmac($ip);
             $response = function ($seconds) {
                 return response()->json([
                     'ok' => false,
