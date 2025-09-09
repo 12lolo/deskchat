@@ -134,7 +134,7 @@ php artisan serve
 ## 🚀 Hostinger deployment (shared hosting)
 1. **Subdomain**: create `api.deskchat.live` → document root `domains/deskchat.live/public_html/_api/public`
 2. **Upload/clone** your Laravel project into `_api` (above `public/`).
-3. **.env**: set DB creds from hPanel; set `APP_URL`, `IP_HMAC_SECRET`, `CACHE_STORE=database`.
+3. **.env**: start from `.env.production.example`, set DB creds from hPanel; set `APP_URL`, and a strong `IP_HMAC_SECRET`; keep `CACHE_STORE=database`.
 4. **Migrate**: `php artisan migrate --force && php artisan cache:table && php artisan migrate --force`
 5. **Optimize**: `php artisan config:cache route:cache view:cache`
 6. **Cron** (hPanel → Cron Jobs): every minute  
