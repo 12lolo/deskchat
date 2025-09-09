@@ -1,8 +1,8 @@
 # Technisch Ontwerp — deskchat live
 
 **Project**: deskchat live  
-**Versie**: 1.2 (herzien, correcte Markdown in één blok)  
-**Datum**: 2025-09-04  
+**Versie**: 1.3  
+**Datum**: 2025-09-09  
 **Auteur**: Senne Visser  
 **Website**: https://deskchat.live  
 **API**: https://api.deskchat.live
@@ -14,7 +14,7 @@
 2. Samenvatting
 3. Plan van aanpak
 4. Op te leveren producten
-5. Planning
+5. Planning (tot vrijdag 19 september 2025, 23:29)
 6. Interfaces (sequence en activity diagram)
 7. Ontwikkelomgeving
 8. Technische infrastructuur
@@ -27,6 +27,8 @@
 15. Beheer
 16. Back-up
 17. Content
+18. Niet-functionele eisen (NFR)
+19. Acceptatie- en teststrategie
 
 ---
 
@@ -80,15 +82,18 @@ Dit Technisch Ontwerp (TO) beschrijft alle technische keuzes en implementatiedet
 
 ---
 
-## 5. Planning
+## 5. Planning (tot vrijdag 19 september 2025, 23:29)
 | Fase | Periode (2025) | Deliverables |
 |---|---|---|
-| Analyse & ontwerp | 4–5 sep | API-schets, ERD, FO/TO |
-| Backend MVP | 6–8 sep | GET/POST, validatie, throttling, CORS |
-| Tray-app MVP | 9–11 sep | WPF build (send/receive, errors, tray) |
-| Wallpaper | 12 sep | index.html (polling, DOM-cap, pause) |
-| Integratie & test | 13–15 sep | E2E, perf, purgejob |
-| Oplevering | 16–17 sep | Deploy, privacytekst, demo |
+| Analyse & ontwerp | 9 sep | FO/TO updates, planning en acceptatiecriteria |
+| Backend MVP | 9–10 sep | GET/POST, validatie, throttling (IP HMAC + device), CORS, retentiejob |
+| Tray-app MVP | 11–12 sep | WPF build (send/receive, error UI, tray-icoon, device-id) |
+| Wallpaper | 13 sep | index.html (polling, DOM-cap 100, pause bij hidden) |
+| Integratie & test | 14–15 sep | E2E, performance sanity, privacytekst v1 |
+| Deploy + feedback | 16 sep | Hostinger deploy, SSL, scheduler, healthcheck; feedbackronde, UX-finetuning |
+| Buffertijd | 17 sep | Bugfixes, kleine verbeteringen |
+| Documentatie | 18 sep | Korte handleiding, README, privacy-notitie |
+| Oplevering | 19 sep | Demo, handleiding, privacy-notitie (voor 23:29) |
 
 ---
 
@@ -241,3 +246,27 @@ CREATE TABLE messages (
 - **Verboden**: PII, kwetsende taal (gefilterd), scripts/HTML (gestript)
 - **Privacy-notitie**: device-id (anoniem), `ip_hmac` (max 90d), hosting access-logs door Hostinger
 - **Could-have media**: alleen **links/embeds** voor GIFs (Tenor/gelinkte `.gif`), geen uploads/hosting
+
+---
+
+## 18. Niet-functionele eisen (NFR)
+- Performance: nieuwe berichten zichtbaar op wallpaper binnen ~5 s; API p99 < 300 ms bij normaal gebruik.
+- Resourcegebruik: wallpaper JS lichtgewicht; DOM maximaal ~100 items; tray-app idle CPU ~0%.
+- Beschikbaarheid: basis 24/7 met shared hosting; healthcheck endpoint aanwezig; eenvoudige fallback bij storingen.
+- Privacy: geen raw IP in app/DB/logs; alleen ip_hmac (HMAC van IP) + anonieme device-id; TLS verplicht.
+- Veiligheid: server-side sanitization (strip_tags), lengte-limieten, woordenfilter; rate limits per IP-HMAC, per device en globaal.
+- Onderhoudbaarheid: simpele config via .env; geen zware externe dependencies.
+
+## 19. Acceptatie- en teststrategie
+- Unit/Feature tests (PHPUnit):
+  - POST validatie (lengte, leeg na sanitization, ontbrekende device-id)
+  - Profanity block
+  - Rate limiting (per device)
+  - Retentiejob (purge >90d)
+  - GET since_id/limit en volgorde (asc) met last_id
+- Handmatige E2E:
+  - Tray→API→Wallpaper flow (bericht sturen en binnen ~5 s zien)
+  - Foutpaden in tray: 422, 429, 400 met duidelijke meldingen
+  - CORS check voor wallpaper en website
+- Performance sanity: 100 snelle POSTs gespreid, API blijft responsief; wallpaper CPU laag.
+- Beheercheck: health endpoint 200; cron/scheduler draait; logs zonder PII.

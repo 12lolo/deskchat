@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Support\IpPrivacy;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
@@ -24,7 +25,7 @@ class AppServiceProvider extends ServiceProvider
     {
         RateLimiter::for('chat', function (Request $r) {
             $device = $r->header('X-Device-Id') ?: 'no-device';
-            // customize JSON on throttle
+            $ipKey  = IpPrivacy::hmac($r->ip());
             $response = function ($seconds) {
                 return response()->json([
                     'ok' => false,
@@ -34,8 +35,8 @@ class AppServiceProvider extends ServiceProvider
             };
 
             return [
-                Limit::perMinute(20)->by($r->ip())->response(fn() => $response(60)),
-                Limit::perMinute(15)->by($device)->response(fn() => $response(60)),
+                Limit::perMinute(20)->by("ip:$ipKey")->response(fn() => $response(60)),
+                Limit::perMinute(15)->by("dev:$device")->response(fn() => $response(60)),
                 Limit::perMinute(300)->by('global')->response(fn() => $response(60)),
             ];
         });

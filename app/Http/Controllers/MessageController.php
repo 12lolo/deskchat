@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 use App\Models\Message;
 use App\Support\IpPrivacy;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 
 class MessageController extends Controller
@@ -40,20 +41,29 @@ class MessageController extends Controller
             return response()->json(['ok'=>false,'error'=>'missing_device_id'], 400);
         }
 
-        $data = $r->validate([
+        $v = Validator::make($r->all(), [
             'handle'  => 'nullable|string|min:1|max:24',
             'content' => 'required|string|min:1|max:280',
         ]);
+        if ($v->fails()) {
+            return response()->json(['ok'=>false,'error'=>'validation_failed','details'=>$v->errors()->toArray()], 422);
+        }
 
-        $content = trim(strip_tags($data['content']));
-        $content = preg_replace('/\s+/u', ' ', $content);
+        $handle  = $r->input('handle');
+        $content = (string)$r->input('content');
+
+        // Sanitize: strip HTML, collapse whitespace, trim
+        $content = trim(preg_replace('/\s+/u', ' ', strip_tags($content)) ?? '');
+        if ($content === '') {
+            return response()->json(['ok'=>false,'error'=>'validation_failed','details'=>['content'=>['empty_after_sanitization']]], 422);
+        }
 
         if ($this->hasProfanity($content)) {
             return response()->json(['ok'=>false,'error'=>'profanity_blocked'], 422);
         }
 
         $msg = Message::create([
-            'handle'    => $data['handle'] ?? null,
+            'handle'    => $handle ?: null,
             'content'   => $content,
             'device_id' => Str::substr($device, 0, 64),
             'ip_hmac'   => IpPrivacy::hmac($r->ip()),
@@ -74,7 +84,6 @@ class MessageController extends Controller
         $words = array_filter(array_unique(array_map('trim', config('profanity.words', []))));
         if (empty($words)) return false;
         $escaped = array_map(fn($w) => preg_quote($w, '/'), $words);
-        // word boundaries, case-insensitive, unicode
         $pattern = '/\b(' . implode('|', $escaped) . ')\b/iu';
         return preg_match($pattern, $text) === 1;
     }

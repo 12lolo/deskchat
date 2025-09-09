@@ -1,11 +1,17 @@
 <?php
 namespace App\Console;
 
+use App\Console\Commands\PurgeOldMessages;
 use App\Models\Message;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 
 class Kernel extends ConsoleKernel
+    /** @var array<class-string> */
+    protected $commands = [
+        PurgeOldMessages::class,
+    ];
+
 {
     protected function schedule(Schedule $schedule): void
     {

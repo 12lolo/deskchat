@@ -1,11 +1,10 @@
 # Functioneel Ontwerp — deskchat live
 
 **Project:** deskchat live  
-**Versie:** 1.0  
-**Datum:** 2025-09-04  
+**Versie:** 2.1  
+**Datum:** 2025-09-09  
 **Auteur:** Senne Visser  
-**Website:** https://deskchat.live  
-**API:** https://api.deskchat.live
+**Website:** https://deskchat.live
 
 ---
 
@@ -13,102 +12,167 @@
 1. Voorwoord
 2. Samenvatting
 3. Analyse huidige situatie  
-   3.1 Informatiewerking  
-   3.2 Applicaties  
-   3.3 Infrastructuur
+   3.1 Wat er nu is  
+   3.2 Wat er ontbreekt
 4. Analyse gewenste situatie  
-   4.1 Requirements (MoSCoW)  
-   4.2 Informatieverwerking  
-   4.3 Applicaties  
-   4.4 Infrastructuur
-5. Consequenties  
-   5.1 Organisatorische consequenties  
-   5.2 Technische consequenties  
+   4.1 Wat het systeem moet kunnen (MoSCoW)  
+   4.2 Hoe gebruikers het systeem gebruiken  
+   4.3 Wat voor onderdelen er komen
+5. Gevolgen en impact  
+   5.1 Voor gebruikers  
+   5.2 Voor beheer  
    5.3 Kosten  
-   5.4 Planning
+   5.4 Planning (tot vrijdag 19 september 2025, 23:29)
+6. Acceptatiecriteria
 
 ---
 
 ## 1. Voorwoord
-Dit FO beschrijft **wat** deskchat live moet doen: een Windows-achtergrond die live chatberichten toont (read-only), een Windows tray-app voor invoer en een Laravel API als backend. Privacy-by-design is uitgangspunt.
+Dit document beschrijft **wat** deskchat live doet en waarom. Het systeem bestaat uit een bewegende achtergrond op de computer die live chatberichten toont, en een klein programma waarmee je zelf berichten kunt versturen. Het is bedoeld voor mensen die graag een sociale, interactieve achtergrond willen tijdens het werken.
 
 ---
 
 ## 2. Samenvatting
-- **UX:** Live feed als achtergrond; berichten plaatsen via tray-app met **nickname** (geen accounts).
-- **API:** Validatie, **profanityfilter**, **rate limiting** (IP + device), opslag zonder raw IP (alleen `ip_hmac`).
-- **Hosting:** Hostinger (shared), MySQL, cron voor retentie (≤ 90 dagen).
-- **MVP:** 1 room (`global`), tekst-only; **Could-have:** meerdere rooms + gif-embeds (Tenor/links).
+deskchat live is een chatprogramma dat bestaat uit twee delen:
+
+**De achtergrond**: Een bewegende achtergrond voor je computer (gemaakt met Wallpaper Engine) waar je live berichten van andere gebruikers ziet verschijnen. Je kunt hier alleen kijken, niet typen.
+
+**Het chatprogramma**: Een klein programma dat onzichtbaar op de achtergrond draait. Via een icoon onderin je scherm kun je chatberichten typen en versturen.
+
+**Gebruiksgemak**: Geen ingewikkelde accounts aanmaken - je kiest gewoon een bijnaam en kunt meteen chatten. Berichten zijn openbaar en iedereen kan meepraten in één grote chatruimte.
+
+**Veiligheid**: Het systeem houdt geen persoonlijke gegevens bij en beschermt tegen spam door limieten in te stellen op hoeveel berichten je kunt versturen.
 
 ---
 
 ## 3. Analyse huidige situatie
-### 3.1 Informatiewerking (as is)
-- Geen bestaand chatsysteem; domeinen bestaan; geen data of moderatieproces.
-### 3.2 Applicaties (as is)
-- Wallpaper Engine beschikbaar; Hostinger beschikbaar; nog geen app/API geïmplementeerd.
-### 3.3 Infrastructuur (as is)
-- Hostinger (LiteSpeed/Apache + PHP + MySQL), SSL via hPanel, SSH-toegang.
+### 3.1 Wat er nu is
+- Er bestaan websites (deskchat.live) maar er draait nog geen chatsysteem
+- Mensen kunnen Wallpaper Engine installeren voor bewegende achtergronden
+- Er is webhosting beschikbaar om het systeem te laten draaien
+
+### 3.2 Wat er ontbreekt
+- Een manier om live berichten te delen tussen gebruikers
+- Een programma waarmee mensen berichten kunnen typen
+- Een systeem dat berichten opslaat en doorgeeft
+- Bescherming tegen spam en ongepast taalgebruik
 
 ---
 
 ## 4. Analyse gewenste situatie
-### 4.1 Requirements (MoSCoW)
+### 4.1 Wat het systeem moet kunnen (MoSCoW)
 
-**Must-have**
-- Wallpaper toont feed via `GET /api/messages?since_id=&limit=`.
-- Trayapp plaatst berichten via `POST /api/messages` met `X-Device-Id: <UUID>`.
-- Validatie: content 1–280; handle 1–24 (optioneel).
-- Profanityfilter; rate limiting per-IP en per-device; privacy (geen raw IP).
-- Retentie: purge ≤ 90 dagen.
+**Moet hebben (anders werkt het niet)**
+- Achtergrond toont nieuwe berichten van andere gebruikers
+- Gebruikers kunnen berichten typen en versturen via een klein programma
+- Berichten mogen niet te lang zijn (maximaal 280 tekens, zoals Twitter)
+- Gebruikers kunnen een bijnaam kiezen (geen echte naam vereist)
+- Systeem blokkeert scheldwoorden en ongepaste taal
+- Bescherming tegen spam (niet te veel berichten per persoon)
+- Berichten worden automatisch verwijderd na een tijdje (maximaal 90 dagen)
 
-**Should-have**
-- `since_id` + `limit` voor lage load; pauze bij `document.hidden`.
-- Foutmeldingen 422/429 in tray-app; configureerbare limieten en poll-interval.
-- Privacy-notitie op deskchat.live.
+**Zou fijn zijn**
+- Berichten laden snel en de achtergrond gebruikt weinig computer-kracht
+- Duidelijke foutmeldingen als er iets mis gaat
+- Het programma stopt met werken als je computer vergrendeld is (bespaart internetverkeer)
+- Informatie over privacy op de website
 
-**Could-have**
-- **Meerdere chatrooms**:
-    - API: `room`-parameter (default `global`), trayapp room-selector, wallpaper per-room of cyclisch.
-- **GIF-embeds** (lichtgewicht) via Tenor/gelinkte `.gif` (client-side; geen uploads).
-- Shadow-ban; eenvoudige emoji-weergave.
+**Zou leuk zijn (misschien later)**
+- **Meerdere chatruimtes**: bijvoorbeeld apart voor verschillende onderwerpen
+- **Plaatjes delen**: kleine animaties (GIFs) kunnen delen via links
+- Eenvoudige smileys in berichten
 
-**Won’t-have (MVP)**
-- Accounts/login, profielen, E2E-encryptie, uploads/media-hosting, WebSockets, moderatie-dashboard, AI-filtering.
-
----
-
-### 4.2 Informatieverwerking (to be)
-**Actoren:** Gebruiker, Tray-app, Wallpaper, API, DB.  
-**Objecten:** `Message { id, handle, content, device_id, ip_hmac, created_at }`.  
-**Stromen:**
-1. **POST /api/messages** → trim/strip → validatie → profanity → rate-limit → `ip_hmac` → insert → 201.
-2. **GET /api/messages?since_id&limit** → select > since_id → sort/limit → JSON + `last_id`.
-3. **Purge job** (cron) → delete ouder dan 90 d.
-
-**Fouten:** `400 missing_device_id`, `422 validation/profanity_blocked`, `429 rate_limited (retry_after)`.
+**Komt er niet (te ingewikkeld voor nu)**
+- Inloggen met wachtwoorden
+- Profielpagina's van gebruikers
+- Bestanden uploaden
+- Berichten die alleen jij kunt lezen
+- Moderatoren die berichten kunnen verwijderen
 
 ---
 
-### 4.3 Applicaties (to be)
-**Wallpaper:** read-only; poll 2,5 s; cap 100; `pointer-events:none`; pauze bij `document.hidden`.  
-**Tray-app (WPF .NET 8):** device UUID genereren; POST/GET; foutmeldingen tonen; kleine UI.  
-**API (Laravel):** routes, throttle, profanity, HMAC, CORS; geen raw IP in DB/app-logs.
+### 4.2 Hoe gebruikers het systeem gebruiken
+
+**Een gewone gebruiker wil chatten:**
+1. Installeert Wallpaper Engine en zet de deskchat live achtergrond aan
+2. Downloadt het kleine chatprogramma en start het op
+3. Kiest een bijnaam (bijvoorbeeld "Alex" of "ChatLover")
+4. Typt een bericht en drukt op verzenden
+5. Ziet het bericht verschijnen op de achtergrond, samen met berichten van anderen
+6. Kan altijd nieuwe berichten typen via het icoon onderin het scherm
+
+**Wat er gebeurt als er problemen zijn:**
+- Te lang bericht → gebruiker krijgt melding "Bericht te lang, maximaal 280 tekens"
+- Scheldwoord gebruikt → gebruiker krijgt melding "Bericht bevat ongepaste taal"
+- Te veel berichten gestuurd → gebruiker krijgt melding "Wacht even voordat je weer een bericht stuurt"
+- Geen internetverbinding → programma probeert het later opnieuw
+
+**Wat gebruikers zien op hun achtergrond:**
+- Nieuwe berichten verschijnen automatisch (iedere paar seconden wordt er gekeken)
+- Oude berichten verdwijnen van het scherm (alleen de laatste 100 berichten blijven zichtbaar)
+- Als de computer vergrendeld is, stopt de achtergrond met laden van nieuwe berichten
 
 ---
 
-### 4.4 Infrastructuur (to be)
-**Hostinger:** subdomein `api.deskchat.live` → `domains/deskchat.live/public_html/_api/public`; SSL; MySQL; cron scheduler.  
-**Configuratie:** `.env` met `APP_URL`, DB, `IP_HMAC_SECRET`, `CACHE_STORE=database`; `config/cors.php` met open `GET`.
+### 4.3 Wat voor onderdelen er komen
+
+**De bewegende achtergrond:**
+- Toont alleen berichten (je kunt er niet in typen)
+- Ververst automatisch elke paar seconden
+- Toont maximaal 100 berichten tegelijk
+- Werkt alleen als je computer niet vergrendeld is
+
+**Het chatprogramma:**
+- Klein programma dat onzichtbaar op de achtergrond draait
+- Icoon onderin je scherm (bij de klok)
+- Simpel venster om berichten te typen
+- Toont foutmeldingen als er iets mis gaat
+- Onthoud je bijnaam zodat je die niet steeds opnieuw hoeft in te voeren
+
+**Het systeem achter de schermen:**
+- Ontvangt berichten van gebruikers
+- Controleert of berichten niet te lang zijn
+- Blokkeert scheldwoorden
+- Zorgt dat gebruikers niet te veel berichten versturen
+- Slaat berichten op en deelt ze met alle gebruikers
+- Verwijdert oude berichten automatisch
 
 ---
 
-## 5. Consequenties
-### 5.1 Organisatorische consequenties
-- Privacyverklaring (device-id, ip_hmac; Hostinger logs), basis moderatiebeleid, minimaal beheer.
-### 5.2 Technische consequenties
-- Schaalbaar genoeg met polling; migratie naar VPS/WebSockets mogelijk bij groei.
+## 5. Gevolgen en impact
+### 5.1 Voor gebruikers
+- **Voordelen:** Leuke, interactieve achtergrond tijdens het werken; geen ingewikkelde accounts
+- **Nadelen:** Alleen Windows computers; vereist Wallpaper Engine (kost een paar euro)
+- **Privacy:** Geen persoonlijke gegevens opgeslagen; berichten zijn openbaar voor iedereen
+- **Gebruik:** Geschikt voor mensen die van sociale interactie houden tijdens werken
+
+### 5.2 Voor beheer
+- **Onderhoud:** Minimaal; systeem draait grotendeels automatisch
+- **Moderatie:** Automatische filter voor scheldwoorden; handmatige moderatie niet vereist
+- **Kosten:** Gebruikt bestaande webhosting; geen extra kosten
+- **Schaalbaarheid:** Kan groeien naar meer gebruikers zonder grote aanpassingen
+
 ### 5.3 Kosten
-- Gedekt door bestaande Hostinger + domeinen; (optioneel) code signing voor tray-app.
-### 5.4 Planning
-- Zie projectplan; MVP gereed binnen ~2 weken met fasering Analyse → Backend → Tray → Wallpaper → E2E → Oplevering.
+- **Gebruikers:** Wallpaper Engine (eenmalig ~€4), verder gratis
+- **Ontwikkeling:** Geen extra kosten (gebruikt bestaande hosting)
+- **Onderhoud:** Minimale tijd voor monitoring en updates en hostingkosten voor api en welcome page (~€ 4 per maand)
+
+### 5.4 Planning (tot vrijdag 19 september 2025, 23:29)
+- 9–10 sep: Backend MVP afronden (berichten GET/POST, validatie, woordfilter, throttling, retentie).
+- 11–12 sep: Tray-app MVP (verzenden/ontvangen, foutmeldingen, device-id, tray-icoon).
+- 13 sep: Wallpaper (polling, DOM-cap 100, pauze bij vergrendeling/hidden).
+- 14-15 sep: Integratie en E2E tests (happy path + fouten, privacytekst 1e versie).
+- 16 sep: Hosting/deploy, CORS check, scheduler, healthcheck, Feedbackronde, finetuning UX/teksten.
+- 17 sep: bufferdag (bugfixes, kleine verbeteringen).
+- 18 sep: Documentatie (korte handleiding, readme, privacy-notitie).
+- 19 sep: Buffer & oplevering (demo, korte handleiding, definitieve privacy-notitie) vóór 23:29.
+
+---
+
+## 6. Acceptatiecriteria
+- Wallpaper toont nieuwe berichten binnen ~5 seconden; maximaal ~100 zichtbaar.
+- Tray-app kan bericht (1–280 tekens) met bijnaam versturen; duidelijke foutmelding bij: te lang, woordfilter, rate limit, ontbrekende device-id.
+- API responses conform: 201 bij succes; 400 missing_device_id; 422 validation_failed/profanity_blocked; 429 rate_limited met retry_after.
+- Geen accounts; geen persoonsgegevens opgeslagen; alleen anonieme device-id en ip_hmac (hash van IP) voor misbruikpreventie.
+- Berichten ouder dan max 90 dagen worden automatisch verwijderd.
+- Privacy-notitie in gewone taal is beschikbaar op de site.
