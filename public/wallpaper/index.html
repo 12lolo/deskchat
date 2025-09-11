@@ -675,5 +675,96 @@
             })();
         })();
     </script>
+    <style>
+        /* Lightweight carousel/toggle styles for wallpaper-safe controls */
+        .setting-inline { display: flex; align-items: center; gap: .5rem; }
+        .carousel-ctrl { display:inline-flex; align-items:center; gap:.5rem; background: var(--card-bg, rgba(255,255,255,.08)); border: 1px solid rgba(255,255,255,.12); border-radius: 999px; padding: .25rem .5rem; }
+        .carousel-ctrl button { appearance: none; border: 0; background: transparent; color: inherit; font: inherit; padding: .25rem .5rem; cursor: pointer; opacity:.9; }
+        .carousel-ctrl button:active { transform: translateY(1px); }
+        .carousel-ctrl .val { min-width: 4.5rem; text-align: center; font-weight: 600; letter-spacing: .02em; }
+        .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: #8884; transition: .2s; border-radius: 999px; }
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: .2s; }
+        .switch input:checked + .slider { background: #4ade80aa; }
+        .switch input:checked + .slider:before { transform: translateX(20px); }
+    </style>
+    <script>
+        // Replace dropdown selects with wallpaper-friendly controls (carousel/toggle)
+        (function replaceDropdowns(){
+            function tryFindAlignmentSelect(){
+                const selects = Array.from(document.querySelectorAll('select'));
+                return selects.find(s => {
+                    const vals = Array.from(s.options).map(o => (o.value||'').toLowerCase());
+                    return vals.includes('left') && vals.includes('center') && vals.includes('right');
+                });
+            }
+            function tryFindThemeSelect(){
+                const selects = Array.from(document.querySelectorAll('select'));
+                return selects.find(s => {
+                    const vals = Array.from(s.options).map(o => (o.value||'').toLowerCase());
+                    return vals.includes('dark') && vals.includes('light');
+                });
+            }
+            function dispatchChange(el){ try { el.dispatchEvent(new Event('change', { bubbles:true })); } catch {}
+            }
+
+            // Alignment carousel
+            const posSelect = window.positionSelect || tryFindAlignmentSelect();
+            if (posSelect && !posSelect.dataset.replaced) {
+                const order = ['left','center','right'];
+                const wrap = document.createElement('div');
+                wrap.className = 'setting-inline';
+                const ctrl = document.createElement('div');
+                ctrl.className = 'carousel-ctrl';
+                const prev = document.createElement('button'); prev.type='button'; prev.setAttribute('aria-label','Prev'); prev.textContent = '‹';
+                const next = document.createElement('button'); next.type='button'; next.setAttribute('aria-label','Next'); next.textContent = '›';
+                const val = document.createElement('span'); val.className = 'val';
+                ctrl.append(prev, val, next);
+                wrap.append(ctrl);
+                posSelect.style.display = 'none';
+                posSelect.after(wrap);
+
+                function apply(v){
+                    const value = (v||'').toLowerCase();
+                    const idx = Math.max(0, order.indexOf(value));
+                    posSelect.value = order[idx];
+                    val.textContent = order[idx][0].toUpperCase() + order[idx].slice(1);
+                    if (typeof window.applyPosition === 'function') window.applyPosition(order[idx]); else dispatchChange(posSelect);
+                    if (typeof window.saveSetting === 'function') window.saveSetting('position', order[idx]);
+                }
+                prev.addEventListener('click', () => { const i = order.indexOf(posSelect.value); apply(order[(i+order.length-1)%order.length]); });
+                next.addEventListener('click', () => { const i = order.indexOf(posSelect.value); apply(order[(i+1)%order.length]); });
+                apply(posSelect.value || 'center');
+                posSelect.dataset.replaced = '1';
+            }
+
+            // Theme toggle (Light/Dark)
+            const themeSelect = window.themeSelect || tryFindThemeSelect();
+            if (themeSelect && !themeSelect.dataset.replaced) {
+                const wrap = document.createElement('div'); wrap.className = 'setting-inline';
+                const label = document.createElement('span'); label.textContent = 'Theme';
+                const toggleWrap = document.createElement('label'); toggleWrap.className = 'switch';
+                const input = document.createElement('input'); input.type = 'checkbox';
+                const slider = document.createElement('span'); slider.className = 'slider';
+                toggleWrap.append(input, slider);
+                const text = document.createElement('span'); text.style.minWidth='3.5rem'; text.style.textAlign='center'; text.style.fontWeight='600';
+                wrap.append(label, toggleWrap, text);
+                themeSelect.style.display = 'none'; themeSelect.after(wrap);
+
+                function applyThemeUI(val){
+                    const v = (val||'').toLowerCase();
+                    themeSelect.value = v;
+                    input.checked = (v === 'dark');
+                    text.textContent = v === 'dark' ? 'Dark' : 'Light';
+                    if (typeof window.applyTheme === 'function') window.applyTheme(v); else dispatchChange(themeSelect);
+                    if (typeof window.saveSetting === 'function') window.saveSetting('theme', v);
+                }
+                input.addEventListener('change', () => applyThemeUI(input.checked ? 'dark' : 'light'));
+                applyThemeUI(themeSelect.value || 'dark');
+                themeSelect.dataset.replaced = '1';
+            }
+        })();
+    </script>
     </body>
-</html>
+    </html>
