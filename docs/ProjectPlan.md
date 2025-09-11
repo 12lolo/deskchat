@@ -7,16 +7,31 @@
 
 ---
 
+<!-- 
+Kijk naar pagina 16 van het boek Software Developer en houd je eerst eens aan de inhoudsopgave structuur van dat voorbeeld.
+De kopjes en subkopjes die je zo kan overnemen staan daarin. Wat is de reden dat je die niet overneemt?
+Op pagina 23 staat een toelichting van de kopjes binnen de projectomschrijving.
+Er zitten al een hoop delen in, maar net even anders. Voor je afstuderen raad ik aan om een template document te maken waarin je alle benodigde elementen zet, in de juiste volgorde en met een toelichting wat erin moet.
+-->
+
+<!-- Inleiding mis ik -->
+
+
+<!-- Projectomschrijving -->
+
+<!-- Dit is een stuk resultaat -->
 ## Wat is deskchat live?
 Deskchat live is een leuke, sociale achtergrond voor je computer. Je ziet korte, openbare berichten van anderen direct op je bureaublad verschijnen. Zelf kun je berichten plaatsen via een klein programmaatje in de systeemtray. Geen accounts, geen gedoe—gewoon meelezen en korte updates delen.
 
 ---
 
+<!-- Doelen en een deel aanleiding -->
 ## Waarom dit project?
 Veel mensen werken lang achter hun computer en missen informele, lichte sociale interactie. Bestaande chatapps vragen aandacht en onderbreken je werk. Deskchat live biedt juist een rustige, “ambient” manier om verbonden te blijven zonder je workflow te verstoren.
 
 ---
 
+<!-- Resultaat -->
 ## Wat wil ik bereiken?
 - Een werkende eerste versie waarmee gebruikers:
   - nieuwe berichten op hun achtergrond zien verschijnen;
