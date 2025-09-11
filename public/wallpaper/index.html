@@ -196,7 +196,7 @@
         <div class="headline">deskchat live</div>
         <div id="feed" aria-live="polite" aria-busy="false"></div>
         <div class="status" id="status">Connecting…</div>
-        <div class="watermark">Press D for debug</div>
+    <div class="watermark">Keys: D debug · +/- size · [ ] position · T theme</div>
     </div>
     <script>
         (function () {
@@ -208,6 +208,7 @@
             let POLL_MS = Math.max(800, Number(params.get('interval') || 2500));
             const PAGE_LIMIT = Math.min(100, Math.max(1, Number(params.get('limit') || 30)));
             const MAX_DOM = Math.min(300, Math.max(10, Number(params.get('max') || 100)));
+            const SCROLL_MS = Math.max(300, Math.min(1500, Number(params.get('scroll_ms') || 700)));
 
             // DOM elements
             const feed = document.getElementById('feed');
@@ -375,18 +376,15 @@
                     }
                     // slight delay to ensure layout settled
                     setTimeout(() => {
-                        const jump = wasNearBottom || shouldForceBottom();
-                        if (jump) {
-                            feed.classList.add('no-smooth');
-                            scrollToBottom(false);
-                            setTimeout(() => feed.classList.remove('no-smooth'), 80);
-                        } else {
-                            scrollToBottom(false);
-                        }
-                    }, 30);
+                        const force = wasNearBottom || shouldForceBottom();
+                        if (force) scrollToBottom(true, SCROLL_MS); else scrollToBottom(false);
+                    }, 40);
+                    // extra passes to catch late layout (fonts/embeds)
+                    setTimeout(() => { if (wasNearBottom || shouldForceBottom()) scrollToBottom(false); }, 160);
+                    setTimeout(() => { if (wasNearBottom || shouldForceBottom()) scrollToBottom(false); }, 420);
                     // ensure we scroll again when media finishes loading, preventing half-cut last message
                     for (const media of mediaToLoad) {
-                        const handler = () => { if (wasNearBottom || shouldForceBottom()) { feed.classList.add('no-smooth'); scrollToBottom(false); setTimeout(() => feed.classList.remove('no-smooth'), 80); } };
+                        const handler = () => { if (wasNearBottom || shouldForceBottom()) { scrollToBottom(false); } };
                         if (media.tagName === 'IMG') {
                             if (!media.complete) media.addEventListener('load', handler, { once: true });
                         } else if (media.tagName === 'VIDEO') {
@@ -399,8 +397,9 @@
                         try {
                             if (window.Tenor && window.Tenor.Embed) {
                                 window.Tenor.Embed.render();
-                                // Tenor injects asynchronously; scroll after a short delay
-                                setTimeout(() => { if (wasNearBottom || shouldForceBottom()) { feed.classList.add('no-smooth'); scrollToBottom(false); setTimeout(() => feed.classList.remove('no-smooth'), 80); } }, 200);
+                                // Tenor injects asynchronously; scroll after short delays
+                                setTimeout(() => { if (wasNearBottom || shouldForceBottom()) { scrollToBottom(false); } }, 200);
+                                setTimeout(() => { if (wasNearBottom || shouldForceBottom()) { scrollToBottom(false); } }, 600);
                             }
                         } catch {}
                     }
@@ -425,31 +424,49 @@
                 } catch {}
             }
 
-            function scrollToBottom(smooth = true) {
-                try {
-                    const behavior = smooth ? 'smooth' : 'auto';
-                    feed.scrollTo({ top: feed.scrollHeight, behavior });
-                } catch {
-                    feed.scrollTop = feed.scrollHeight;
+            function easeInOutCubic(t){ return t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t+2,3)/2; }
+            function animateScrollTo(targetTop, duration){
+                const startTop = feed.scrollTop;
+                const delta = targetTop - startTop;
+                if (Math.abs(delta) < 1 || duration <= 0){ feed.scrollTop = targetTop; return; }
+                const start = performance.now();
+                function step(now){
+                    const t = Math.min(1, (now - start) / duration);
+                    feed.scrollTop = startTop + delta * easeInOutCubic(t);
+                    if (t < 1) requestAnimationFrame(step);
                 }
+                requestAnimationFrame(step);
+            }
+            function scrollToBottom(smooth = true, duration = SCROLL_MS) {
+                const target = feed.scrollHeight;
+                if (smooth) animateScrollTo(target, duration); else feed.scrollTop = target;
             }
 
             async function tick() {
                 if (!visible()) { setStatus('Paused (hidden)'); schedule(); return; }
                 try {
-                    const url = `${API_BASE}/api/messages?since_id=${lastId}&limit=${PAGE_LIMIT}`;
-                    const res = await fetch(url, { cache: 'no-store' });
-                    if (!res.ok) throw new Error('HTTP ' + res.status);
-                    const data = await res.json();
-                    const items = Array.isArray(data.messages) ? data.messages : [];
+                    // 1) Peek for last_id (cheap; served from cache on server)
+                    const peekRes = await fetch(`${API_BASE}/api/messages/peek`, { cache: 'no-store' });
+                    if (!peekRes.ok) throw new Error('PEEK ' + peekRes.status);
+                    const peek = await peekRes.json();
+                    const serverLast = Number(peek.last_id || 0);
 
-                    if (items.length) {
-                        render(items);
-                        lastId = Number(data.last_id || items[items.length-1]?.id || lastId);
-                        setStatus(`Updated · ${new Date().toLocaleTimeString()}`);
+                    if (serverLast > lastId) {
+                        // 2) Only then fetch the new messages
+                        const url = `${API_BASE}/api/messages?since_id=${lastId}&limit=${PAGE_LIMIT}`;
+                        const res = await fetch(url, { cache: 'no-store' });
+                        if (!res.ok) throw new Error('HTTP ' + res.status);
+                        const data = await res.json();
+                        const items = Array.isArray(data.messages) ? data.messages : [];
+                        if (items.length) {
+                            render(items);
+                            lastId = Number(data.last_id || items[items.length-1]?.id || lastId);
+                            setStatus(`Updated · ${new Date().toLocaleTimeString()}`);
+                        } else {
+                            lastId = Number(data.last_id ?? lastId);
+                            setStatus('No new messages');
+                        }
                     } else {
-                        // Update lastId anyway for consistency with API contract
-                        lastId = Number(data.last_id ?? lastId);
                         setStatus('No new messages');
                     }
                     backoff = POLL_MS; // reset on success
@@ -490,30 +507,67 @@
             });
 
             window.addEventListener('keydown', (e) => {
-                if (e.key === 'd' || e.key === 'D') {
-                    debug = !debug; setStatus(debug ? 'Debug ON' : 'Debug OFF');
+                // Debug toggle
+                if (e.key === 'd' || e.key === 'D') { debug = !debug; setStatus(debug ? 'Debug ON' : 'Debug OFF'); return; }
+                // +/- to change message size
+                if (e.key === '+' || e.key === '=') {
+                    const v = Math.min(1.5, parseFloat(msgScale.value || '1') + 0.05).toFixed(2);
+                    msgScale.value = v; applyMsgScale(v); saveSetting('msgScale', v); setTimeout(() => scrollToBottom(false), 60); return;
+                }
+                if (e.key === '-' || e.key === '_') {
+                    const v = Math.max(0.7, parseFloat(msgScale.value || '1') - 0.05).toFixed(2);
+                    msgScale.value = v; applyMsgScale(v); saveSetting('msgScale', v); setTimeout(() => scrollToBottom(false), 60); return;
+                }
+                // [ / ] to cycle position
+                if (e.key === '[' || e.key === '{') {
+                    const order = ['left','center','right'];
+                    const cur = positionSelect.value; const idx = Math.max(0, order.indexOf(cur) - 1);
+                    const nxt = order[idx]; positionSelect.value = nxt; applyPosition(nxt); saveSetting('position', nxt); return;
+                }
+                if (e.key === ']' || e.key === '}') {
+                    const order = ['left','center','right'];
+                    const cur = positionSelect.value; const idx = Math.min(order.length-1, order.indexOf(cur) + 1);
+                    const nxt = order[idx]; positionSelect.value = nxt; applyPosition(nxt); saveSetting('position', nxt); return;
+                }
+                // T to toggle theme
+                if (e.key === 't' || e.key === 'T') {
+                    const nxt = themeSelect.value === 'dark' ? 'light' : 'dark';
+                    themeSelect.value = nxt; applyTheme(nxt); saveSetting('theme', nxt); return;
                 }
             });
 
             // Kick-off: prime lastId with a first page so we don't flood the screen initially
             (async function init() {
                 try {
-                    const url = `${API_BASE}/api/messages?limit=${PAGE_LIMIT}`;
-                    const res = await fetch(url, { cache: 'no-store' });
-                    if (res.ok) {
-                        const data = await res.json();
-                        const items = Array.isArray(data.messages) ? data.messages : [];
-                        render(items);
-                        lastId = Number(data.last_id || 0);
-                        setStatus(`Ready · ${items.length} loaded`);
-                        // Jump to bottom and keep bottom locked briefly to catch late layout changes
-                        forceBottomUntil = Date.now() + 1800;
-                        feed.classList.add('no-smooth');
-                        scrollToBottom(false);
-                        setTimeout(() => feed.classList.remove('no-smooth'), 120);
-                    } else {
-                        setStatus('Init failed');
+                    let loadedCount = 0;
+                    // Prime lastId via peek; then fetch a first page if any
+                    const pr = await fetch(`${API_BASE}/api/messages/peek`, { cache: 'no-store' });
+                    let serverLast = 0;
+                    if (pr.ok) {
+                        const pk = await pr.json();
+                        serverLast = Number(pk.last_id || 0);
                     }
+                    if (serverLast > 0) {
+                        const url = `${API_BASE}/api/messages?since_id=${Math.max(0, serverLast - PAGE_LIMIT)}&limit=${PAGE_LIMIT}`;
+                        const res = await fetch(url, { cache: 'no-store' });
+                        if (res.ok) {
+                            const data = await res.json();
+                            const items = Array.isArray(data.messages) ? data.messages : [];
+                            render(items);
+                            lastId = Number(data.last_id || serverLast);
+                            loadedCount = items.length;
+                        } else {
+                            lastId = serverLast;
+                        }
+                    } else {
+                        lastId = 0;
+                    }
+                    setStatus(`Ready · ${loadedCount} loaded`);
+                    // Jump to bottom and keep bottom locked briefly to catch late layout changes
+                    forceBottomUntil = Date.now() + 1800;
+                    feed.classList.add('no-smooth');
+                    scrollToBottom(false);
+                    setTimeout(() => feed.classList.remove('no-smooth'), 120);
                 } catch {
                     setStatus('Init error');
                 } finally {

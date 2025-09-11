@@ -4,8 +4,11 @@ namespace App\Http\Controllers;
 use App\Models\Message;
 use App\Support\IpPrivacy;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+use Carbon\Carbon;
 
 class MessageController extends Controller
 {
@@ -15,23 +18,30 @@ class MessageController extends Controller
         if ($limit < 1)  $limit = 1;
         if ($limit > 100) $limit = 100;
 
-        $q = Message::query();
+        // Use query builder with a narrow column set to avoid Eloquent hydration overhead
+        $q = DB::table('messages')->select('id', 'handle', 'content', 'created_at');
         if ($sinceId > 0) $q->where('id', '>', $sinceId);
 
         $rows = $q->orderBy('id', 'asc')->limit($limit)->get();
 
-        $messages = $rows->map(fn($m) => [
-            'id'      => (int)$m->id,
-            'handle'  => $m->handle ?? 'Anon',
-            'content' => $m->content,
-            'ts'      => $m->created_at?->toIso8601String(),
-        ]);
+        $messages = $rows->map(function ($m) {
+            $ts = null;
+            if (!empty($m->created_at)) {
+                try { $ts = Carbon::parse($m->created_at)->toIso8601String(); } catch (\Throwable $e) { $ts = null; }
+            }
+            return [
+                'id'      => (int)$m->id,
+                'handle'  => $m->handle ?? 'Anon',
+                'content' => $m->content,
+                'ts'      => $ts,
+            ];
+        });
 
-        $lastId = $rows->last()->id ?? $sinceId;
+        $lastId = (int)($rows->last()->id ?? $sinceId);
 
         return response()->json([
             'messages' => $messages,
-            'last_id'  => (int)$lastId,
+            'last_id'  => $lastId,
         ]);
     }
 
@@ -63,12 +73,15 @@ class MessageController extends Controller
         }
 
         $clientIp = method_exists($r, 'getClientIp') ? $r->getClientIp() : $r->ip();
-        $msg = Message::create([
+    $msg = Message::create([
             'handle'    => $handle ?: null,
             'content'   => $content,
             'device_id' => Str::substr($device, 0, 64),
             'ip_hmac'   => IpPrivacy::hmac($clientIp),
         ]);
+
+    // Update cached last_id to support lightweight peek checks without DB hits
+    try { Cache::put('messages:last_id', (int)$msg->id, 86400); } catch (\Throwable $e) {}
 
         return response()->json([
             'ok'      => true,
@@ -87,5 +100,22 @@ class MessageController extends Controller
         $escaped = array_map(fn($w) => preg_quote($w, '/'), $words);
         $pattern = '/\b(' . implode('|', $escaped) . ')\b/iu';
         return preg_match($pattern, $text) === 1;
+    }
+
+    // Lightweight endpoint to let clients check if new messages exist without hitting DB heavily.
+    public function peek(Request $r) {
+        try {
+            $cached = Cache::get('messages:last_id');
+            if ($cached !== null) {
+                return response()->json(['last_id' => (int)$cached]);
+            }
+        } catch (\Throwable $e) {
+            // ignore cache errors and fall through to DB
+        }
+        // Fallback: a single cheap DB query if cache cold
+        $max = (int)(Message::max('id') ?? 0);
+        // Warm the cache for next time
+        try { Cache::put('messages:last_id', $max, 86400); } catch (\Throwable $e) {}
+        return response()->json(['last_id' => $max]);
     }
 }
