@@ -29,6 +29,8 @@
 17. Content
 18. Niet-functionele eisen (NFR)
 19. Acceptatie- en teststrategie
+20. Technische eisen
+21. Versiebeheer
 
 ---
 
@@ -270,3 +272,38 @@ CREATE TABLE messages (
   - CORS check voor wallpaper en website
 - Performance sanity: 100 snelle POSTs gespreid, API blijft responsief; wallpaper CPU laag.
 - Beheercheck: health endpoint 200; cron/scheduler draait; logs zonder PII.
+
+---
+
+## 20. Technische eisen
+- Platformen en versies:
+  - PHP 8.2/8.3 met Laravel 11+, MySQL 8.x, .NET 8 (WPF), HTML/JS (wallpaper).
+- API-contract (MVP):
+  - Endpoints: `GET /api/messages`, `POST /api/messages`, `GET /api/health`.
+  - Headers: `Content-Type: application/json`, verplicht `X-Device-Id` bij POST.
+  - Antwoorden en foutcodes conform sectie 9.1 (201/400/422/429) met consistente JSON.
+- Veiligheid & privacy:
+  - TLS verplicht; geen raw IP in app/DB/logs; alleen `ip_hmac` (HMAC met server-secret).
+  - Server-side sanitization en profanityfilter verplicht actief.
+  - Rate limiting per IP (op basis van ip_hmac), per device, plus globale limiter.
+- Clientgedrag:
+  - Wallpaper pollt elke ~2.5 s; pauzeert bij `document.hidden`; cap ~100 DOM-items.
+  - Tray-app bewaart persistente UUID als device-id; toont duidelijke foutmeldingen.
+- Dataretentie & beheer:
+  - Automatische purge van berichten ouder dan 90 dagen (cron/scheduler).
+  - Health endpoint beschikbaar en monitorbaar; deploy via Hostinger met cron voor scheduler.
+- CORS:
+  - `GET` toegestaan voor wallpaper; `POST` toegestaan voor tray-app; geen credentials.
+
+---
+
+## 21. Versiebeheer
+- Branchstrategie:
+  - `main`: stabiele productiecode; versie-tags (`vMAJOR.MINOR.PATCH`).
+  - `dev`: integratiebranch voor lopend werk; feature-branches `feature/*` via PR naar `dev`.
+- Releases:
+  - API: semver tags; changelog bijhouden in repo; deploy vanuit tag.
+  - Tray-app: semver releases met buildnummer; binaries publiceren in Releases.
+- Code review & QA:
+  - PR verplicht naar `dev` met checklist (build/test groen).
+  - Documentatie en testplan bijwerken bij functionaliteitswijzigingen.

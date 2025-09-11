@@ -1,468 +1,625 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>deskchat live — wallpaper</title>
-  <style>
-    :root {
-      --bg1: #0f172a; /* slate-900 */
-      --bg2: #1e293b; /* slate-800 */
-      --card: rgba(255,255,255,0.08);
-      --text: #e5e7eb; /* gray-200 */
-      --muted: #94a3b8; /* slate-400 */
-      --accent: #60a5fa; /* blue-400 */
-      --shadow: rgba(0,0,0,0.35);
-      --font: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial, sans-serif;
-      --font-size: clamp(14px, 1.6vw, 22px);
-      --max-messages: 100;
-      --accent2: #a78bfa; /* violet-400 */
-      --accent3: #34d399; /* emerald-400 */
-      --card-border: rgba(255,255,255,0.12);
-    }
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>deskchat live — Wallpaper</title>
+    <style>
+        :root {
+            --bg1: #0f172a; /* slate-900 */
+            --bg2: #1e293b; /* slate-800 */
+            --card: rgba(255,255,255,0.08);
+            --text: #e5e7eb; /* gray-200 */
+            --muted: #94a3b8; /* slate-400 */
+            --accent: #60a5fa; /* blue-400 */
+            --shadow: rgba(0,0,0,0.35);
+            --font: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial, sans-serif;
+            --font-size: clamp(14px, 1.6vw, 22px);
+            --max-messages: 100;
+            --accent2: #a78bfa; /* violet-400 */
+            --accent3: #34d399; /* emerald-400 */
+            --card-border: rgba(255,255,255,0.12);
+            --embed-min-h: 140px;
+            --embed-max-h: 50vh;
+            --fade-h: 56px;
+        }
 
-    html, body {
-      margin: 0; padding: 0; height: 100%; width: 100%;
-      background: radial-gradient(120% 120% at 100% 0%, var(--bg2), var(--bg1));
-      color: var(--text);
-      font-family: var(--font);
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-      overflow: hidden;
-      user-select: none;
-      pointer-events: none; /* Let desktop clicks pass through */
-    }
+        html, body {
+            margin: 0; padding: 0; height: 100%; width: 100%;
+            background: radial-gradient(120% 120% at 100% 0%, var(--bg2), var(--bg1));
+            color: var(--text);
+            font-family: var(--font);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            overflow: hidden;
+            user-select: none;
+            pointer-events: none; /* Let desktop clicks pass through */
+        }
 
-    .wrap {
-      position: absolute; inset: 0; box-sizing: border-box;
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      min-height: 100vh;
-      width: 100vw;
-      padding: 4vh 5vw 12vh 5vw;
-      pointer-events: none;
-    }
+        .wrap {
+            position: absolute; inset: 0; box-sizing: border-box;
+            display: flex; flex-direction: column; align-items: var(--h-align, center); justify-content: center;
+            min-height: 100vh;
+            width: 100vw;
+            padding: 4vh 5vw 12vh 5vw;
+            pointer-events: none;
+        }
 
-    .headline {
-      font-weight: 600; letter-spacing: 0.02em; font-size: clamp(16px, 2vw, 26px);
-      color: var(--muted);
-      text-shadow: 0 1px 2px var(--shadow);
-      margin-bottom: 1.5vh;
-    }
+        .headline {
+            font-weight: 600; letter-spacing: 0.02em; font-size: clamp(16px, 2vw, 26px);
+            color: var(--muted);
+            text-shadow: 0 1px 2px var(--shadow);
+            margin-bottom: 1.5vh;
+        }
 
-    .settings-btn {
-      position: absolute; top: 2.5vh; right: 5vw; z-index: 10;
-      background: none; border: none; cursor: pointer; padding: 6px;
-      border-radius: 50%; transition: background 0.15s;
-      width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;
-      pointer-events: auto;
-    }
-    .settings-btn:hover, .settings-btn:focus { background: rgba(255,255,255,0.10); }
-    .settings-btn svg { width: 24px; height: 24px; fill: var(--muted); }
+        .settings-btn {
+            position: absolute; top: 2.5vh; right: 5vw; z-index: 10;
+            background: none; border: none; cursor: pointer; padding: 6px;
+            border-radius: 50%; transition: background 0.15s;
+            width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;
+            pointer-events: auto;
+        }
+        .settings-btn:hover, .settings-btn:focus { background: rgba(255,255,255,0.10); }
+        .settings-btn svg { width: 24px; height: 24px; fill: var(--muted); }
 
-    .settings-menu {
-      position: absolute; top: 54px; right: 5vw; min-width: 210px;
-      background: var(--card); color: var(--text); border-radius: 12px;
-      box-shadow: 0 8px 32px -8px var(--shadow);
-      padding: 18px 20px 14px 20px; z-index: 20;
-      display: none; flex-direction: column; gap: 16px;
-      font-size: 1em;
-      pointer-events: auto;
-      animation: menuIn 220ms cubic-bezier(.2,.8,.2,1);
-    }
-    .settings-menu.open { display: flex; }
-    @keyframes menuIn {
-      0% { opacity: 0; transform: translateY(-12px) scale(0.98); }
-      100% { opacity: 1; transform: translateY(0) scale(1); }
-    }
-    .settings-menu label { font-size: 0.98em; color: var(--muted); margin-bottom: 2px; }
-    .settings-menu select, .settings-menu input[type=range] {
-      width: 100%; margin-top: 2px; margin-bottom: 6px;
-    }
-    .settings-menu .row { display: flex; align-items: center; gap: 10px; }
-    .settings-menu .row input[type=range] { flex: 1; }
-    .settings-menu .row .val { min-width: 2.5em; text-align: right; color: var(--accent); font-size: 0.98em; }
+        .settings-menu {
+            position: absolute; top: 54px; right: 5vw; min-width: 210px;
+            background: var(--card); color: var(--text); border-radius: 12px;
+            box-shadow: 0 8px 32px -8px var(--shadow);
+            padding: 18px 20px 14px 20px; z-index: 20;
+            display: none; flex-direction: column; gap: 16px;
+            font-size: 1em;
+            pointer-events: auto;
+            animation: menuIn 220ms cubic-bezier(.2,.8,.2,1);
+        }
+        .settings-menu.open { display: flex; }
+        @keyframes menuIn {
+            0% { opacity: 0; transform: translateY(-12px) scale(0.98); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .settings-menu label { font-size: 0.98em; color: var(--muted); margin-bottom: 2px; }
+        .settings-menu select, .settings-menu input[type=range] {
+            width: 100%; margin-top: 2px; margin-bottom: 6px;
+        }
+        .settings-menu .row { display: flex; align-items: center; gap: 10px; }
+        .settings-menu .row input[type=range] { flex: 1; }
+        .settings-menu .row .val { min-width: 2.5em; text-align: right; color: var(--accent); font-size: 0.98em; }
 
-    #feed {
-      display: flex; flex-direction: column; gap: calc(12px * var(--msg-scale, 1)); align-self: center;
-      overflow-y: auto; overflow-x: hidden; /* programmatic scroll only */
-      scroll-behavior: smooth; max-height: 60vh; min-height: 30vh; min-width: 340px; width: 100%;
-      /* hide scrollbars */
-      scrollbar-width: none; /* Firefox */
-      -ms-overflow-style: none; /* IE/Edge */
-      mask-image: linear-gradient(to bottom, transparent 0, black 1.5rem, black calc(100% - 1.5rem), transparent 100%);
-      box-sizing: border-box;
-      padding-bottom: 2vh;
-    }
-    #feed::-webkit-scrollbar { display: none; }
+        #feed {
+            display: flex; flex-direction: column; gap: calc(12px * var(--msg-scale, 1));
+            align-self: var(--h-align, center);
+            align-items: var(--msg-align, center);
+            overflow-y: auto; overflow-x: hidden; /* programmatic scroll only */
+            scroll-behavior: smooth; max-height: 60vh; min-height: 30vh; min-width: 340px; width: min(90vw, calc(80ch * var(--msg-scale, 1)));
+            /* hide scrollbars */
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none; /* IE/Edge */
+            position: relative;
+            box-sizing: border-box;
+            padding: 0 12px calc(var(--fade-h) + 10px) 12px; /* leave space so last message rests above fade */
+        }
+        #feed::-webkit-scrollbar { display: none; }
+        /* Bottom fade overlay */
+        #feed::after {
+            content: "";
+            position: absolute; left: 0; right: 0; bottom: 0; height: var(--fade-h);
+            pointer-events: none; /* visual only */
+            background: linear-gradient(to bottom, rgba(0,0,0,0) 0%, var(--bg1) 100%);
+        }
 
-    .msg {
-      max-width: 72ch; padding: calc(12px * var(--msg-scale, 1)) calc(16px * var(--msg-scale, 1)); border-radius: 14px;
-      position: relative;
-      background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.06));
-      backdrop-filter: blur(8px) saturate(120%);
-      border: 1px solid var(--card-border);
-      box-shadow: 0 10px 24px -8px var(--shadow);
-      opacity: 0; transform: translateY(16px);
-      transition: opacity 260ms ease, transform 320ms cubic-bezier(.2,.8,.2,1), box-shadow 300ms ease;
-      font-size: calc(var(--font-size) * var(--msg-scale, 1));
-    }
-    .msg.show { opacity: 1; transform: translateY(0); }
-    .msg::before {
-      content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; border-radius: 14px 0 0 14px;
-      background: linear-gradient(180deg, var(--accent), var(--accent2), var(--accent3));
-      filter: saturate(120%);
-      opacity: 0.85;
-    }
-    .msg.new { animation: popIn 420ms cubic-bezier(.2,.9,.2,1), glow 1200ms ease-out; }
-    @keyframes popIn {
-      0% { opacity: 0; transform: translateY(22px) scale(0.99); }
-      60% { opacity: 1; transform: translateY(0) scale(1.01); }
-      100% { transform: translateY(0) scale(1); }
-    }
-    @keyframes glow {
-      0% { box-shadow: 0 14px 40px -18px rgba(96,165,250,0.65), 0 0 0 0 rgba(96,165,250,0.0); }
-      100% { box-shadow: 0 10px 24px -8px var(--shadow); }
-    }
-    .meta { font-size: 0.85em; color: var(--muted); margin-bottom: 4px; }
-    .handle { color: var(--accent); font-weight: 600; }
-    .content { font-size: var(--font-size); line-height: 1.35; white-space: pre-wrap; word-wrap: break-word; }
-    .status {
-      align-self: end; justify-self: end; color: var(--muted); font-size: 12px;
-      text-shadow: 0 1px 2px var(--shadow);
-    }
-    .watermark { position: absolute; bottom: 2vh; left: 5vw; opacity: 0.3; color: var(--muted); font-size: 12px; }
+        .msg {
+            max-width: 100%; width: 100%; box-sizing: border-box; padding: calc(12px * var(--msg-scale, 1)) calc(16px * var(--msg-scale, 1)); border-radius: 14px;
+            position: relative;
+            background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.06));
+            backdrop-filter: blur(8px) saturate(120%);
+            border: 1px solid var(--card-border);
+            box-shadow: 0 10px 24px -8px var(--shadow);
+            opacity: 0; transform: translateY(16px);
+            transition: opacity 260ms ease, transform 320ms cubic-bezier(.2,.8,.2,1), box-shadow 300ms ease;
+            font-size: calc(var(--font-size) * var(--msg-scale, 1));
+        }
+        /* temporarily disable smooth scrolling during jump-to-bottom operations */
+        #feed.no-smooth { scroll-behavior: auto !important; }
+        .msg.show { opacity: 1; transform: translateY(0); }
+        .msg::before {
+            content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; border-radius: 14px 0 0 14px;
+            background: linear-gradient(180deg, var(--accent), var(--accent2), var(--accent3));
+            filter: saturate(120%);
+            opacity: 0.85;
+        }
+        .msg.new { animation: popIn 420ms cubic-bezier(.2,.9,.2,1), glow 1200ms ease-out; }
+        @keyframes popIn {
+            0% { opacity: 0; transform: translateY(22px) scale(0.99); }
+            60% { opacity: 1; transform: translateY(0) scale(1.01); }
+            100% { transform: translateY(0) scale(1); }
+        }
+        @keyframes glow {
+            0% { box-shadow: 0 14px 40px -18px rgba(96,165,250,0.65), 0 0 0 0 rgba(96,165,250,0.0); }
+            100% { box-shadow: 0 10px 24px -8px var(--shadow); }
+        }
+        .meta { font-size: 0.85em; color: var(--muted); margin-bottom: 4px; }
+        .handle { color: var(--accent); font-weight: 600; }
+        .content { font-size: var(--font-size); line-height: 1.35; white-space: pre-wrap; word-wrap: break-word; }
+        .status {
+            align-self: end; justify-self: end; color: var(--muted); font-size: 12px;
+            text-shadow: 0 1px 2px var(--shadow);
+        }
+        .watermark { position: absolute; bottom: 2vh; left: 5vw; opacity: 0.3; color: var(--muted); font-size: 12px; }
 
-  /* Embeds */
-  .embed { margin-top: 8px; border-radius: 12px; overflow: hidden; box-shadow: 0 8px 22px -10px var(--shadow); }
-  .embed.tenor { width: calc(420px * var(--msg-scale, 1)); max-width: 100%; }
-  .embed-media { display: block; width: 100%; height: auto; object-fit: contain; background: rgba(255,255,255,0.04); }
-  video.embed-media { max-height: 60vh; }
-    @media (prefers-reduced-motion: reduce) {
-      #feed { scroll-behavior: auto; }
-      .msg { transition: none; }
-      .msg.new { animation: none; }
-    }
-  </style>
-  <button class="settings-btn" id="settingsBtn" title="Settings" tabindex="0" aria-label="Settings">
-    <svg viewBox="0 0 24 24"><path d="M12 15.5A3.5 3.5 0 1 0 12 8.5a3.5 3.5 0 0 0 0 7zm7.43-2.9l1.77-1.02a1 1 0 0 0 .37-1.36l-1.7-2.94a1 1 0 0 0-1.28-.45l-1.77 1.02a7.03 7.03 0 0 0-1.52-.88l-.27-1.97A1 1 0 0 0 14.04 4h-3.08a1 1 0 0 0-.99.85l-.27 1.97a7.03 7.03 0 0 0-1.52.88l-1.77-1.02a1 1 0 0 0-1.28.45l-1.7 2.94a1 1 0 0 0 .37 1.36l1.77 1.02c-.06.32-.1.65-.13.99s-.04.67-.04 1.01.01.68.04 1.01c.03.34.07.67.13.99l-1.77 1.02a1 1 0 0 0-.37 1.36l1.7 2.94a1 1 0 0 0 1.28.45l1.77-1.02c.47.34.98.64 1.52.88l.27 1.97a1 1 0 0 0 .99.85h3.08a1 1 0 0 0 .99-.85l.27-1.97c.54-.24 1.05-.54 1.52-.88l1.77 1.02a1 1 0 0 0 1.28-.45l1.7-2.94a1 1 0 0 0-.37-1.36l-1.77-1.02c.06-.32.1-.65.13-.99.03-.33.04-.67.04-1.01s-.01-.68-.04-1.01a7.6 7.6 0 0 0-.13-.99z"/></svg>
-  </button>
-  <div class="settings-menu" id="settingsMenu" tabindex="-1">
-    <div>
-      <label for="msgScale">Message size</label>
-      <div class="row">
-        <input type="range" id="msgScale" min="0.7" max="1.5" step="0.01" value="1">
-        <span class="val" id="msgScaleVal">1.00x</span>
-      </div>
+        /* Embeds */
+    .embed { margin-top: 8px; border-radius: 12px; overflow: hidden; box-shadow: 0 8px 22px -10px var(--shadow); width: 100%; }
+    .embed.tenor { width: 100%; max-width: 100%; min-height: var(--embed-min-h); max-height: var(--embed-max-h); }
+    .embed-media { display: block; width: 100%; height: auto; object-fit: contain; background: rgba(255,255,255,0.04); max-height: var(--embed-max-h); }
+    .embed img.embed-media { min-height: var(--embed-min-h); }
+    video.embed-media { max-height: var(--embed-max-h); }
+        @media (prefers-reduced-motion: reduce) {
+            #feed { scroll-behavior: auto; }
+            .msg { transition: none; }
+            .msg.new { animation: none; }
+        }
+    </style>
+    <button class="settings-btn" id="settingsBtn" title="Settings" tabindex="0" aria-label="Settings">
+        <svg viewBox="0 0 24 24"><path d="M12 15.5A3.5 3.5 0 1 0 12 8.5a3.5 3.5 0 0 0 0 7zm7.43-2.9l1.77-1.02a1 1 0 0 0 .37-1.36l-1.7-2.94a1 1 0 0 0-1.28-.45l-1.77 1.02a7.03 7.03 0 0 0-1.52-.88l-.27-1.97A1 1 0 0 0 14.04 4h-3.08a1 1 0 0 0-.99.85l-.27 1.97a7.03 7.03 0 0 0-1.52.88l-1.77-1.02a1 1 0 0 0-1.28.45l-1.7 2.94a1 1 0 0 0 .37 1.36l1.77 1.02c-.06.32-.1.65-.13.99s-.04.67-.04 1.01.01.68.04 1.01c.03.34.07.67.13.99l-1.77 1.02a1 1 0 0 0-.37 1.36l1.7 2.94a1 1 0 0 0 1.28.45l1.77-1.02c.47.34.98.64 1.52.88l.27 1.97a1 1 0 0 0 .99.85h3.08a1 1 0 0 0 .99-.85l.27-1.97c.54-.24 1.05-.54 1.52-.88l1.77 1.02a1 1 0 0 0 1.28-.45l1.7-2.94a1 1 0 0 0-.37-1.36l-1.77-1.02c.06-.32.1-.65.13-.99.03-.33.04-.67.04-1.01s-.01-.68-.04-1.01a7.6 7.6 0 0 0-.13-.99z"/></svg>
+    </button>
+    <div class="settings-menu" id="settingsMenu" tabindex="-1">
+        <div>
+            <label for="msgScale">Message size</label>
+            <div class="row">
+                <input type="range" id="msgScale" min="0.7" max="1.5" step="0.01" value="0.9">
+                <span class="val" id="msgScaleVal">0.90x</span>
+            </div>
+        </div>
+        <div>
+            <label for="pollInterval">Refresh rate</label>
+            <div class="row">
+                <input type="range" id="pollInterval" min="500" max="10000" step="100" value="2500">
+                <span class="val" id="pollIntervalVal">2500 ms</span>
+            </div>
+        </div>
+        <div>
+            <label for="positionSelect">Position</label>
+            <select id="positionSelect">
+                <option value="left">Left</option>
+                <option value="center" selected>Center</option>
+                <option value="right">Right</option>
+            </select>
+        </div>
+        <div>
+            <label for="themeSelect">Theme</label>
+            <select id="themeSelect">
+                <option value="dark">Dark</option>
+                <option value="light">Light</option>
+            </select>
+        </div>
     </div>
-    <div>
-      <label for="themeSelect">Theme</label>
-      <select id="themeSelect">
-        <option value="system">System</option>
-        <option value="dark">Dark</option>
-        <option value="light">Light</option>
-      </select>
+    <div class="wrap">
+        <div class="headline">deskchat live</div>
+        <div id="feed" aria-live="polite" aria-busy="false"></div>
+        <div class="status" id="status">Connecting…</div>
+        <div class="watermark">Press D for debug</div>
     </div>
-  </div>
-  <div class="wrap">
-    <div class="headline">deskchat live</div>
-    <div id="feed" aria-live="polite" aria-busy="false"></div>
-    <div class="status" id="status">Connecting…</div>
-    <div class="watermark">Press D for debug</div>
-  </div>
-<script>
-(function () {
-  'use strict';
+    <script>
+        (function () {
+            'use strict';
 
-  // Config via URL params (e.g., ?api=https://api.deskchat.live&interval=2500&limit=30&max=100)
-  const params = new URLSearchParams(location.search);
-  const API_BASE = (params.get('api') || 'https://api.deskchat.live').replace(/\/$/, '');
-  const POLL_MS = Math.max(800, Number(params.get('interval') || 2500));
-  const PAGE_LIMIT = Math.min(100, Math.max(1, Number(params.get('limit') || 30)));
-  const MAX_DOM = Math.min(300, Math.max(10, Number(params.get('max') || 100)));
+            // Config via URL params (e.g., ?api=https://api.deskchat.live&interval=2500&limit=30&max=100)
+            const params = new URLSearchParams(location.search);
+            const API_BASE = (params.get('api') || 'https://api.deskchat.live').replace(/\/$/, '');
+            let POLL_MS = Math.max(800, Number(params.get('interval') || 2500));
+            const PAGE_LIMIT = Math.min(100, Math.max(1, Number(params.get('limit') || 30)));
+            const MAX_DOM = Math.min(300, Math.max(10, Number(params.get('max') || 100)));
 
-  // DOM elements
-  const feed = document.getElementById('feed');
-  const status = document.getElementById('status');
+            // DOM elements
+            const feed = document.getElementById('feed');
+            const status = document.getElementById('status');
 
-  // State
-  let lastId = 0;
-  let timer = null;
-  let backoff = POLL_MS;
-  let debug = false;
-  let hadTenor = false;
-      // Embed helpers
-      const TENOR_RE = /https?:\/\/(?:www\.)?tenor\.com\/view\/[a-z0-9-]*-(\d+)/i;
-      const DIRECT_MEDIA_RE = /(https?:\/\/[^\s]+?\.(?:gif|mp4|webm))(?:\b|$)/i;
+            // State
+            let lastId = 0;
+            let timer = null;
+            let backoff = POLL_MS;
+            let debug = false;
+            let hadTenor = false;
+            // Force bottom lock window to handle late layout (embeds/fonts)
+            let forceBottomUntil = 0;
+            const shouldForceBottom = () => Date.now() < forceBottomUntil;
+            const lockBottom = (ms = 1500) => { forceBottomUntil = Date.now() + ms; };
+            // Embed helpers
+            const TENOR_RE = /https?:\/\/(?:www\.)?tenor\.com\/view\/[a-z0-9-]*-(\d+)/i;
+            const DIRECT_MEDIA_RE = /(https?:\/\/[^\s]+?\.(?:gif|mp4|webm))(?:\b|$)/i;
 
-      let tenorScriptLoaded = false;
-      let tenorScriptLoading = false;
-      function ensureTenorScript() {
-        if (tenorScriptLoaded || tenorScriptLoading) return;
-        tenorScriptLoading = true;
-        const s = document.createElement('script');
-        s.src = 'https://tenor.com/embed.js';
-        s.async = true;
-        s.onload = () => { tenorScriptLoaded = true; tenorScriptLoading = false; try { window.Tenor && window.Tenor.Embed && window.Tenor.Embed.render(); } catch {} };
-        document.head.appendChild(s);
-      }
-
-      function buildEmbedsFromText(text) {
-        const nodes = [];
-        try {
-          const t = String(text ?? '');
-          const tenorMatch = t.match(TENOR_RE);
-          if (tenorMatch) {
-            const id = tenorMatch[1];
-            const c = document.createElement('div');
-            c.className = 'embed tenor';
-            const div = document.createElement('div');
-            div.className = 'tenor-gif-embed';
-            div.setAttribute('data-postid', id);
-            div.setAttribute('data-share-method', 'host');
-            div.setAttribute('data-aspect-ratio', '1.78');
-            div.setAttribute('data-width', '100%');
-            c.appendChild(div);
-            nodes.push(c);
-            hadTenor = true;
-          } else {
-            const mediaMatch = t.match(DIRECT_MEDIA_RE);
-            if (mediaMatch) {
-              const url = mediaMatch[1];
-              const ext = url.split('.').pop().toLowerCase();
-              if (ext === 'gif') {
-                const img = document.createElement('img');
-                img.src = url;
-                img.alt = 'GIF';
-                img.className = 'embed-media';
-                const wrap = document.createElement('div');
-                wrap.className = 'embed';
-                wrap.appendChild(img);
-                nodes.push(wrap);
-              } else { // mp4/webm
-                const video = document.createElement('video');
-                video.src = url;
-                video.autoplay = true; video.loop = true; video.muted = true; video.playsInline = true; video.controls = false;
-                video.className = 'embed-media';
-                const wrap = document.createElement('div');
-                wrap.className = 'embed';
-                wrap.appendChild(video);
-                nodes.push(wrap);
-              }
+            let tenorScriptLoaded = false;
+            let tenorScriptLoading = false;
+            function ensureTenorScript() {
+                if (tenorScriptLoaded || tenorScriptLoading) return;
+                tenorScriptLoading = true;
+                const s = document.createElement('script');
+                s.src = 'https://tenor.com/embed.js';
+                s.async = true;
+                s.onload = () => { tenorScriptLoaded = true; tenorScriptLoading = false; try { window.Tenor && window.Tenor.Embed && window.Tenor.Embed.render(); } catch {} };
+                document.head.appendChild(s);
             }
-          }
-        } catch {}
-        return nodes;
-      }
 
-  function log(...a) { if (debug) console.log('[deskchat]', ...a); }
+            function buildEmbedsFromText(text) {
+                const nodes = [];
+                try {
+                    const t = String(text ?? '');
+                    const tenorMatch = t.match(TENOR_RE);
+                    if (tenorMatch) {
+                        const id = tenorMatch[1];
+                        const c = document.createElement('div');
+                        c.className = 'embed tenor';
+                        const div = document.createElement('div');
+                        div.className = 'tenor-gif-embed';
+                        div.setAttribute('data-postid', id);
+                        div.setAttribute('data-share-method', 'host');
+                        div.setAttribute('data-aspect-ratio', '1.78');
+                        div.setAttribute('data-width', '100%');
+                        c.appendChild(div);
+                        nodes.push(c);
+                        hadTenor = true;
+                    } else {
+                        const mediaMatch = t.match(DIRECT_MEDIA_RE);
+                        if (mediaMatch) {
+                            const url = mediaMatch[1];
+                            const ext = url.split('.').pop().toLowerCase();
+                            if (ext === 'gif') {
+                                const img = document.createElement('img');
+                                img.src = url;
+                                img.alt = 'GIF';
+                                img.className = 'embed-media';
+                                const wrap = document.createElement('div');
+                                wrap.className = 'embed';
+                                wrap.appendChild(img);
+                                nodes.push(wrap);
+                            } else { // mp4/webm
+                                const video = document.createElement('video');
+                                video.src = url;
+                                video.autoplay = true; video.loop = true; video.muted = true; video.playsInline = true; video.controls = false;
+                                video.className = 'embed-media';
+                                const wrap = document.createElement('div');
+                                wrap.className = 'embed';
+                                wrap.appendChild(video);
+                                nodes.push(wrap);
+                            }
+                        }
+                    }
+                } catch {}
+                return nodes;
+            }
 
-  function setStatus(text) {
-    status.textContent = text;
-  }
+            // Remove Tenor/media URLs from the visible text when we render embeds
+            function stripEmbedsFromText(text) {
+                try {
+                    let out = String(text ?? '');
+                    const TENOR_URL_RE = /https?:\/\/(?:www\.)?tenor\.com\/view\/[^\s]+/ig;
+                    const DIRECT_MEDIA_URL_RE = /https?:\/\/[^\s]+?\.(?:gif|mp4|webm)\b/ig;
+                    out = out.replace(TENOR_URL_RE, '');
+                    out = out.replace(DIRECT_MEDIA_URL_RE, '');
+                    // Collapse extra spaces left by removals
+                    out = out.replace(/\s{2,}/g, ' ').trim();
+                    return out;
+                } catch {
+                    return String(text ?? '');
+                }
+            }
 
-  function visible() { return !document.hidden; }
+            function log(...a) { if (debug) console.log('[deskchat]', ...a); }
 
-  function escapeText(s) {
-    // Ensure string and strip control chars
-    return String(s ?? '').replace(/[\u0000-\u001F\u007F]/g, '');
-  }
+            function setStatus(text) {
+                status.textContent = text;
+            }
 
-  function isoToLocal(iso) {
-    try { return new Date(iso).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}); }
-    catch { return '' }
-  }
+            function visible() { return !document.hidden; }
 
-  function render(messages) {
-    if (!messages || !messages.length) return;
+            function escapeText(s) {
+                // Ensure string and strip control chars
+                return String(s ?? '').replace(/[\u0000-\u001F\u007F]/g, '');
+            }
 
-    const frag = document.createDocumentFragment();
-    const newNodes = [];
-    for (const m of messages) {
-      const wrap = document.createElement('div');
-      wrap.className = 'msg new';
+            function isoToLocal(iso) {
+                try { return new Date(iso).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}); }
+                catch { return '' }
+            }
 
-      const meta = document.createElement('div');
-      meta.className = 'meta';
-      const handle = document.createElement('span');
-      handle.className = 'handle';
-      handle.textContent = escapeText(m.handle || 'Anon');
-      const ts = document.createElement('span');
-      ts.textContent = ' · ' + escapeText(isoToLocal(m.ts));
-      meta.appendChild(handle); meta.appendChild(ts);
+            function render(messages) {
+                if (!messages || !messages.length) return;
 
-          const content = document.createElement('div');
-          content.className = 'content';
-          const txt = String(m.content || '');
-          content.textContent = escapeText(txt);
+                const wasNearBottom = (feed.scrollHeight - feed.scrollTop - feed.clientHeight) <= 8;
+                if (wasNearBottom) lockBottom(1800);
+                const frag = document.createDocumentFragment();
+                const newNodes = [];
+                const mediaToLoad = [];
+                for (const m of messages) {
+                    const wrap = document.createElement('div');
+                    wrap.className = 'msg new';
 
-      wrap.appendChild(meta);
-      wrap.appendChild(content);
-          // Embeds (Tenor / direct gif/mp4)
-          const embeds = buildEmbedsFromText(txt);
-          for (const e of embeds) wrap.appendChild(e);
-      frag.appendChild(wrap);
-      newNodes.push(wrap);
-    }
-    feed.appendChild(frag);
+                    const meta = document.createElement('div');
+                    meta.className = 'meta';
+                    const handle = document.createElement('span');
+                    handle.className = 'handle';
+                    handle.textContent = escapeText(m.handle || 'Anon');
+                    const ts = document.createElement('span');
+                    ts.textContent = ' · ' + escapeText(isoToLocal(m.ts));
+                    meta.appendChild(handle); meta.appendChild(ts);
 
-    // Trigger transitions/animations on next frame
-    requestAnimationFrame(() => {
-      for (const n of newNodes) {
-        n.classList.add('show');
-        // remove the 'new' class after the animation ends to avoid re-triggers
-        n.addEventListener('animationend', () => n.classList.remove('new'), { once: true });
-      }
-      scrollToBottom(true);
-          if (hadTenor) { ensureTenorScript(); try { window.Tenor && window.Tenor.Embed && window.Tenor.Embed.render(); } catch {} }
-    });
+                    const txt = String(m.content || '');
+                    // Build embeds first so we know whether to hide the raw link(s)
+                    const embeds = buildEmbedsFromText(txt);
+                    const cleanedTxt = embeds.length ? stripEmbedsFromText(txt) : txt;
+                    const content = document.createElement('div');
+                    content.className = 'content';
+                    if (cleanedTxt.trim().length > 0) {
+                        content.textContent = escapeText(cleanedTxt);
+                    }
 
-    // Trim DOM to MAX_DOM (remove oldest from top)
-    while (feed.children.length > MAX_DOM) {
-      feed.removeChild(feed.firstChild);
-    }
-  }
+                    wrap.appendChild(meta);
+                    if (cleanedTxt.trim().length > 0) wrap.appendChild(content);
+                    // Embeds (Tenor / direct gif/mp4)
+                    for (const e of embeds) {
+                        // track media load events for scroll adjustments
+                        const media = e.querySelector('img.embed-media, video.embed-media');
+                        if (media) mediaToLoad.push(media);
+                        wrap.appendChild(e);
+                    }
+                    frag.appendChild(wrap);
+                    newNodes.push(wrap);
+                }
+                feed.appendChild(frag);
 
-  function scrollToBottom(smooth = true) {
-    try {
-      const behavior = smooth ? 'smooth' : 'auto';
-      feed.scrollTo({ top: feed.scrollHeight, behavior });
-    } catch {
-      feed.scrollTop = feed.scrollHeight;
-    }
-  }
+                // Trigger transitions/animations on next frame
+                requestAnimationFrame(() => {
+                    for (const n of newNodes) {
+                        n.classList.add('show');
+                        // remove the 'new' class after the animation ends to avoid re-triggers
+                        n.addEventListener('animationend', () => n.classList.remove('new'), { once: true });
+                    }
+                    // slight delay to ensure layout settled
+                    setTimeout(() => {
+                        const jump = wasNearBottom || shouldForceBottom();
+                        if (jump) {
+                            feed.classList.add('no-smooth');
+                            scrollToBottom(false);
+                            setTimeout(() => feed.classList.remove('no-smooth'), 80);
+                        } else {
+                            scrollToBottom(false);
+                        }
+                    }, 30);
+                    // ensure we scroll again when media finishes loading, preventing half-cut last message
+                    for (const media of mediaToLoad) {
+                        const handler = () => { if (wasNearBottom || shouldForceBottom()) { feed.classList.add('no-smooth'); scrollToBottom(false); setTimeout(() => feed.classList.remove('no-smooth'), 80); } };
+                        if (media.tagName === 'IMG') {
+                            if (!media.complete) media.addEventListener('load', handler, { once: true });
+                        } else if (media.tagName === 'VIDEO') {
+                            media.addEventListener('loadedmetadata', handler, { once: true });
+                            media.addEventListener('loadeddata', handler, { once: true });
+                        }
+                    }
+                    if (hadTenor) {
+                        ensureTenorScript();
+                        try {
+                            if (window.Tenor && window.Tenor.Embed) {
+                                window.Tenor.Embed.render();
+                                // Tenor injects asynchronously; scroll after a short delay
+                                setTimeout(() => { if (wasNearBottom || shouldForceBottom()) { feed.classList.add('no-smooth'); scrollToBottom(false); setTimeout(() => feed.classList.remove('no-smooth'), 80); } }, 200);
+                            }
+                        } catch {}
+                    }
+                });
 
-  async function tick() {
-    if (!visible()) { setStatus('Paused (hidden)'); schedule(); return; }
-    try {
-      const url = `${API_BASE}/api/messages?since_id=${lastId}&limit=${PAGE_LIMIT}`;
-      const res = await fetch(url, { cache: 'no-store' });
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      const data = await res.json();
-      const items = Array.isArray(data.messages) ? data.messages : [];
+                // Trim DOM to MAX_DOM (remove oldest from top)
+                while (feed.children.length > MAX_DOM) {
+                    feed.removeChild(feed.firstChild);
+                }
+                // Trim further to minimum needed to fill viewport + small buffer for lightweight mode
+                try {
+                    const children = Array.from(feed.children);
+                    let h = 0, keep = 0;
+                    for (let i = children.length - 1; i >= 0; i--) {
+                        const el = children[i];
+                        h += el.getBoundingClientRect().height;
+                        keep++;
+                        if (h >= feed.clientHeight * 1.2) break; // keep just over a screenful
+                    }
+                    const target = Math.max(keep + 3, 8); // tiny buffer, minimum 8
+                    while (feed.children.length > target) feed.removeChild(feed.firstChild);
+                } catch {}
+            }
 
-      if (items.length) {
-        render(items);
-        lastId = Number(data.last_id || items[items.length-1]?.id || lastId);
-        setStatus(`Updated · ${new Date().toLocaleTimeString()}`);
-      } else {
-        // Update lastId anyway for consistency with API contract
-        lastId = Number(data.last_id ?? lastId);
-        setStatus('No new messages');
-      }
-      backoff = POLL_MS; // reset on success
-    } catch (err) {
-      log('poll error:', err);
-      setStatus('Error — backing off');
-      backoff = Math.min(Math.max(backoff * 1.6, POLL_MS), 10000);
-    } finally {
-      schedule();
-    }
-  }
+            function scrollToBottom(smooth = true) {
+                try {
+                    const behavior = smooth ? 'smooth' : 'auto';
+                    feed.scrollTo({ top: feed.scrollHeight, behavior });
+                } catch {
+                    feed.scrollTop = feed.scrollHeight;
+                }
+            }
 
-  function schedule() {
-    clearTimeout(timer); timer = setTimeout(tick, backoff);
-  }
+            async function tick() {
+                if (!visible()) { setStatus('Paused (hidden)'); schedule(); return; }
+                try {
+                    const url = `${API_BASE}/api/messages?since_id=${lastId}&limit=${PAGE_LIMIT}`;
+                    const res = await fetch(url, { cache: 'no-store' });
+                    if (!res.ok) throw new Error('HTTP ' + res.status);
+                    const data = await res.json();
+                    const items = Array.isArray(data.messages) ? data.messages : [];
 
-  document.addEventListener('visibilitychange', () => {
-    if (visible()) { setStatus('Resumed'); backoff = POLL_MS; scrollToBottom(false); tick(); }
-  });
+                    if (items.length) {
+                        render(items);
+                        lastId = Number(data.last_id || items[items.length-1]?.id || lastId);
+                        setStatus(`Updated · ${new Date().toLocaleTimeString()}`);
+                    } else {
+                        // Update lastId anyway for consistency with API contract
+                        lastId = Number(data.last_id ?? lastId);
+                        setStatus('No new messages');
+                    }
+                    backoff = POLL_MS; // reset on success
+                } catch (err) {
+                    log('poll error:', err);
+                    setStatus('Error — backing off');
+                    backoff = Math.min(Math.max(backoff * 1.6, POLL_MS), 10000);
+                } finally {
+                    schedule();
+                }
+            }
 
-  window.addEventListener('keydown', (e) => {
-    if (e.key === 'd' || e.key === 'D') {
-      debug = !debug; setStatus(debug ? 'Debug ON' : 'Debug OFF');
-    }
-  });
+            function schedule() {
+                clearTimeout(timer); timer = setTimeout(tick, backoff);
+            }
 
-  // Kick-off: prime lastId with a first page so we don't flood the screen initially
-  (async function init() {
-    try {
-      const url = `${API_BASE}/api/messages?limit=${PAGE_LIMIT}`;
-      const res = await fetch(url, { cache: 'no-store' });
-      if (res.ok) {
-        const data = await res.json();
-        const items = Array.isArray(data.messages) ? data.messages : [];
-        render(items);
-        lastId = Number(data.last_id || 0);
-        setStatus(`Ready · ${items.length} loaded`);
-        scrollToBottom(false);
-      } else {
-        setStatus('Init failed');
-      }
-    } catch {
-      setStatus('Init error');
-    } finally {
-      schedule();
-    }
-  })();
+            // Re-scroll when container size changes (e.g., window resize or fonts)
+            try {
+                const ro = new ResizeObserver(() => scrollToBottom(false));
+                ro.observe(document.getElementById('feed'));
+            } catch {}
 
-  // Settings state
-  const settingsBtn = document.getElementById('settingsBtn');
-  const settingsMenu = document.getElementById('settingsMenu');
-  const msgScale = document.getElementById('msgScale');
-  const msgScaleVal = document.getElementById('msgScaleVal');
-  const themeSelect = document.getElementById('themeSelect');
+            // Keep bottom locked on async DOM changes (e.g., Tenor injects content)
+            try {
+                const near = () => (feed.scrollHeight - feed.scrollTop - feed.clientHeight) <= 8;
+                const mo = new MutationObserver(() => { if (near()) scrollToBottom(false); });
+                mo.observe(feed, { childList: true, subtree: true });
+            } catch {}
 
-  // Persisted settings
-  function saveSetting(key, val) {
-    try { localStorage.setItem('wallpaper.'+key, val); } catch {}
-  }
-  function loadSetting(key, fallback) {
-    try { return localStorage.getItem('wallpaper.'+key) ?? fallback; } catch { return fallback; }
-  }
+            document.addEventListener('visibilitychange', () => {
+                if (visible()) { setStatus('Resumed'); backoff = POLL_MS; 
+                    // force bottom for a short window after tab becomes visible
+                    forceBottomUntil = Date.now() + 1500;
+                    feed.classList.add('no-smooth');
+                    scrollToBottom(false);
+                    setTimeout(() => feed.classList.remove('no-smooth'), 120);
+                    tick(); }
+            });
 
-  // Message scale
-  function applyMsgScale(val) {
-    document.documentElement.style.setProperty('--msg-scale', val);
-    msgScaleVal.textContent = (+val).toFixed(2) + 'x';
-  }
-  msgScale.addEventListener('input', e => {
-    applyMsgScale(e.target.value);
-    saveSetting('msgScale', e.target.value);
-  });
+            window.addEventListener('keydown', (e) => {
+                if (e.key === 'd' || e.key === 'D') {
+                    debug = !debug; setStatus(debug ? 'Debug ON' : 'Debug OFF');
+                }
+            });
 
-  // Theme
-  function applyTheme(val) {
-    document.documentElement.dataset.theme = val;
-    if (val === 'dark') {
-      document.documentElement.style.background = 'radial-gradient(120% 120% at 100% 0%, #1e293b, #0f172a)';
-    } else if (val === 'light') {
-      document.documentElement.style.background = 'radial-gradient(120% 120% at 100% 0%, #f1f5f9, #e2e8f0)';
-    } else {
-      document.documentElement.style.background = '';
-    }
-  }
-  themeSelect.addEventListener('change', e => {
-    applyTheme(e.target.value);
-    saveSetting('theme', e.target.value);
-  });
+            // Kick-off: prime lastId with a first page so we don't flood the screen initially
+            (async function init() {
+                try {
+                    const url = `${API_BASE}/api/messages?limit=${PAGE_LIMIT}`;
+                    const res = await fetch(url, { cache: 'no-store' });
+                    if (res.ok) {
+                        const data = await res.json();
+                        const items = Array.isArray(data.messages) ? data.messages : [];
+                        render(items);
+                        lastId = Number(data.last_id || 0);
+                        setStatus(`Ready · ${items.length} loaded`);
+                        // Jump to bottom and keep bottom locked briefly to catch late layout changes
+                        forceBottomUntil = Date.now() + 1800;
+                        feed.classList.add('no-smooth');
+                        scrollToBottom(false);
+                        setTimeout(() => feed.classList.remove('no-smooth'), 120);
+                    } else {
+                        setStatus('Init failed');
+                    }
+                } catch {
+                    setStatus('Init error');
+                } finally {
+                    schedule();
+                }
+            })();
 
-  // Open/close menu
-  function toggleMenu(force) {
-    const open = force !== undefined ? force : !settingsMenu.classList.contains('open');
-    settingsMenu.classList.toggle('open', open);
-    if (open) settingsMenu.focus();
-  }
-  settingsBtn.addEventListener('click', e => {
-    e.stopPropagation();
-    toggleMenu();
-  });
-  document.addEventListener('click', e => {
-    if (!settingsMenu.contains(e.target) && e.target !== settingsBtn) toggleMenu(false);
-  });
-  settingsMenu.addEventListener('keydown', e => {
-    if (e.key === 'Escape') toggleMenu(false);
-  });
+            // Settings state
+            const settingsBtn = document.getElementById('settingsBtn');
+            const settingsMenu = document.getElementById('settingsMenu');
+            const msgScale = document.getElementById('msgScale');
+            const msgScaleVal = document.getElementById('msgScaleVal');
+            const themeSelect = document.getElementById('themeSelect');
+            const pollInterval = document.getElementById('pollInterval');
+            const pollIntervalVal = document.getElementById('pollIntervalVal');
+            const positionSelect = document.getElementById('positionSelect');
 
-  // Load settings on startup
-  (function initSettings() {
-    const scale = loadSetting('msgScale', '1');
-    msgScale.value = scale;
-    applyMsgScale(scale);
-    const theme = loadSetting('theme', 'system');
-    themeSelect.value = theme;
-    applyTheme(theme);
-  })();
-})();
-</script>
-</body>
+            // Persisted settings
+            function saveSetting(key, val) {
+                try { localStorage.setItem('wallpaper.'+key, val); } catch {}
+            }
+            function loadSetting(key, fallback) {
+                try { return localStorage.getItem('wallpaper.'+key) ?? fallback; } catch { return fallback; }
+            }
+
+            // Message scale
+            function applyMsgScale(val) {
+                document.documentElement.style.setProperty('--msg-scale', val);
+                msgScaleVal.textContent = (+val).toFixed(2) + 'x';
+            }
+            msgScale.addEventListener('input', e => {
+                applyMsgScale(e.target.value);
+                saveSetting('msgScale', e.target.value);
+            });
+
+            // Theme
+            function applyTheme(val) {
+                document.documentElement.dataset.theme = val;
+                if (val === 'dark') {
+                    document.documentElement.style.background = 'radial-gradient(120% 120% at 100% 0%, #1e293b, #0f172a)';
+                } else {
+                    document.documentElement.style.background = 'radial-gradient(120% 120% at 100% 0%, #f1f5f9, #e2e8f0)';
+                }
+            }
+            // Poll interval
+            function applyPollInterval(ms) {
+                const n = Math.max(500, Math.min(10000, Number(ms)||2500));
+                POLL_MS = n;
+                pollIntervalVal.textContent = `${n} ms`;
+                backoff = POLL_MS; // take effect next schedule
+                schedule();
+            }
+            pollInterval.addEventListener('input', e => {
+                applyPollInterval(e.target.value);
+                saveSetting('interval', String(POLL_MS));
+            });
+
+            // Position
+            function applyPosition(pos) {
+                let container = 'center';
+                let items = 'center';
+                if (pos === 'left') { container = 'flex-start'; items = 'flex-start'; }
+                else if (pos === 'right') { container = 'flex-end'; items = 'flex-end'; }
+                document.documentElement.style.setProperty('--h-align', container);
+                document.documentElement.style.setProperty('--msg-align', items);
+            }
+            positionSelect.addEventListener('change', e => {
+                applyPosition(e.target.value);
+                saveSetting('position', e.target.value);
+            });
+            themeSelect.addEventListener('change', e => {
+                applyTheme(e.target.value);
+                saveSetting('theme', e.target.value);
+            });
+
+            // Open/close menu
+            function toggleMenu(force) {
+                const open = force !== undefined ? force : !settingsMenu.classList.contains('open');
+                settingsMenu.classList.toggle('open', open);
+                if (open) settingsMenu.focus();
+            }
+            settingsBtn.addEventListener('click', e => {
+                e.stopPropagation();
+                toggleMenu();
+            });
+            document.addEventListener('click', e => {
+                if (!settingsMenu.contains(e.target) && e.target !== settingsBtn) toggleMenu(false);
+            });
+            settingsMenu.addEventListener('keydown', e => {
+                if (e.key === 'Escape') toggleMenu(false);
+            });
+
+            // Load settings on startup
+            (function initSettings() {
+                const scale = loadSetting('msgScale', '0.9');
+                msgScale.value = scale;
+                applyMsgScale(scale);
+                const theme = loadSetting('theme', 'dark');
+                themeSelect.value = theme;
+                applyTheme(theme);
+                const interval = loadSetting('interval', String(POLL_MS));
+                pollInterval.value = interval; applyPollInterval(interval);
+                const pos = loadSetting('position', 'center');
+                positionSelect.value = pos; applyPosition(pos);
+            })();
+        })();
+    </script>
+    </body>
 </html>

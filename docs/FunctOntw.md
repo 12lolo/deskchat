@@ -11,10 +11,10 @@
 ## Inhoudsopgave
 1. Voorwoord
 2. Samenvatting
-3. Analyse huidige situatie  
+3. Huidige situatie (Hoe communiceren systemen)  
    3.1 Wat er nu is  
    3.2 Wat er ontbreekt
-4. Analyse gewenste situatie  
+4. Gewenste situatie (Hoe moeten systemen communiceren)  
    4.1 Wat het systeem moet kunnen (MoSCoW)  
    4.2 Hoe gebruikers het systeem gebruiken  
    4.3 Wat voor onderdelen er komen
@@ -45,7 +45,7 @@ deskchat live is een chatprogramma dat bestaat uit twee delen:
 
 ---
 
-## 3. Analyse huidige situatie
+## 3. Huidige situatie (Hoe communiceren systemen)
 ### 3.1 Wat er nu is
 - Er bestaan websites (deskchat.live) maar er draait nog geen chatsysteem
 - Mensen kunnen Wallpaper Engine installeren voor bewegende achtergronden
@@ -59,7 +59,7 @@ deskchat live is een chatprogramma dat bestaat uit twee delen:
 
 ---
 
-## 4. Analyse gewenste situatie
+## 4. Gewenste situatie (Hoe moeten systemen communiceren)
 ### 4.1 Wat het systeem moet kunnen (MoSCoW)
 
 **Moet hebben (anders werkt het niet)**

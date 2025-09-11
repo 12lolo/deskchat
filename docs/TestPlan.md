@@ -52,6 +52,19 @@ We combineren geautomatiseerde tests (PHPUnit) met gerichte handmatige E2E‑che
 
 ---
 
+## 2a. Wat ga ik testen
+- Functionele flows: berichten plaatsen/halen inclusief foutpaden (te lang, profanity, rate limit, ontbrekende device-id).
+- Interfaces/API-contract: responsevormen en HTTP-codes (201/400/422/429/200).
+- Niet‑functionele eisen: performance‑sanity, resourcegebruik wallpaper, privacy/retentie.
+- Beheer en beschikbaarheid: health endpoint, scheduler/retentiejob.
+
+## 2b. Hoe ga ik testen
+- Geautomatiseerd met PHPUnit feature- en unit‑tests (zie sectie 2 en 5).
+- Handmatige E2E checks met tray‑app of curl + test‑wallpaper.
+- Inspectie van DB‑schema en logconfig voor privacy‑checks.
+
+---
+
 ## 3. Testomgeving
 - Taal/Framework: PHP 8.2/8.3, Laravel 11+, PHPUnit.
 - Database: SQLite in‑memory of tijdelijke SQLite‑file voor tests; MySQL lokaal/CI voor integratie indien gewenst.
@@ -60,6 +73,11 @@ We combineren geautomatiseerde tests (PHPUnit) met gerichte handmatige E2E‑che
 	- `IP_HMAC_SECRET` op dummy waarde
 	- `CACHE_STORE=database` en `php artisan cache:table` migratie uitgevoerd
 - Logging: laravel.log mag geen raw IP bevatten (alleen ip_hmac in records); controle via asserts/log‑inspectie (optioneel).
+
+---
+
+## 3a. Functionele test
+- Dekking van FO‑acceptatiecriteria (zie FunctOntw §6) via testgevallen 1–17 en E2E checks.
 
 ---
 
@@ -84,7 +102,7 @@ We combineren geautomatiseerde tests (PHPUnit) met gerichte handmatige E2E‑che
 8. Profanity — geblokkeerd woord: `content` bevat lijstwoord → 422 `{error:"profanity_blocked"}`.
 9. Device id max lengte — header >64 tekens → opgeslagen device_id is afgekapt tot 64 (assert DB/response niet vereist, alleen geen fout).
 10. Rate limit — per device: 16 snelle POSTs/min (limiet 15) → laatste geeft 429.
-11. Rate limit — per IP: meerdere devices vanaf zelfde IP overschrijden IP‑limiet → 429.
+11. Rate limit �� per IP: meerdere devices vanaf zelfde IP overschrijden IP‑limiet → 429.
 12. Response shape — velden en types: `id:int`, `handle:string`, `content:string`, `ts:ISO8601`.
 
 ### 5.2 GET /api/messages
@@ -104,6 +122,19 @@ We combineren geautomatiseerde tests (PHPUnit) met gerichte handmatige E2E‑che
 
 ---
 
+## 5a. Test scenarios
+- Happy path: tray‑post → API 201 → wallpaper ziet bericht binnen ~5s.
+- Validatiepaden: te lang, leeg, profanity → 422 met juiste foutcodes.
+- Abuserate: device‑limit en IP‑limit → 429 met backoff.
+- Polling/paginatie: since_id/limit correcte subsets en volgorde.
+
+## 5b. Usecases testen
+- Berichten plaatsen met bijnaam en zonder bijnaam.
+- Foutmeldingen in tray‑app bij 400/422/429.
+- Wallpaper stopt polling bij vergrendeling/hidden en hervat daarna.
+
+---
+
 ## 6. Acceptatiecriteria → testdekking
 - Wallpaper toont nieuwe berichten binnen ~5s; max ~100 zichtbaar → TC 15–17 + handmatige E2E polling check.
 - Tray‑app kan bericht (1–280) met bijnaam versturen; duidelijke fout bij te lang/woordfilter/rate limit/missing device → TC 1–12.
@@ -119,12 +150,30 @@ We combineren geautomatiseerde tests (PHPUnit) met gerichte handmatige E2E‑che
 - Integratiedagen (14–15 sep): E2E checks wallpaper+tray, CORS, performance sanity.
 - Voor release (19 sep): volle regressie van feature suite + retentiejob + healthcheck.
 
+## 7a. Rondes
+- Ronde 1 (9–10 sep): Backend feature‑tests groen.
+- Ronde 2 (11–13 sep): Tray/wallpaper smoke + API regressie.
+- Ronde 3 (14–15 sep): Integratie/E2E, scenario’s en performance‑sanity.
+- Ronde 4 (19 sep): Acceptatie/UAT met product owner.
+
 ---
 
 ## 8. Rapportage
 - Resultaten: PHPUnit output en testrapport (optioneel JUnit XML/coverage).
 - Incidenten/bugs: vastleggen als Git issues met stappen, logs en verwachte/feitelijke uitkomst.
 - Exit‑criteria: alle kritieke cases (1–12, 15–17, 18, 20–21) groen; geen blocker‑bugs open.
+
+## 8a. Test rapport
+- Formaat: korte samenvatting per testronde (doel, resultaten, issues, besluit).
+- Archief: opslaan in `docs/test-reports/` of als release‑artifact.
+
+## 8b. Met deze mensen getest
+- Gepland: product owner, 1–2 eindgebruikers (collega’s), ontwikkelaar (self‑test).  
+- Nader in te vullen met namen/rollen en data na uitvoering.
+
+## 8c. Met Test rapport naar product owner
+- Oplevermoment: vrijdag 19 september 2025 (voor 23:29).  
+- Aanlevering: samenvattend testrapport + link naar werkende build/site + bekende beperkingen.
 
 ---
 
@@ -140,12 +189,25 @@ We combineren geautomatiseerde tests (PHPUnit) met gerichte handmatige E2E‑che
 Optioneel — lokaal draaien van de test suite:
 
 ```bash
-# Vereist: vendor dependencies en test-DB setup
 composer install
 php artisan key:generate
 php artisan migrate --env=testing
 phpunit
 ```
+
+## 10a. Acceptatie test
+- Scope: hoofddoelen uit FO §6 en Projectplan “Succescriteria”.
+- Stappen: demo E2E flow, controle foutpaden, privacy‑notitie check, retentiejob bewijs.
+- Criteria: alle hoofddoelen behaald; geen kritieke defects open.
+
+## 10b. Hoofddoelen testen
+- Wallpaper toont nieuwe berichten binnen ~5s, max ~100.
+- Tray‑app verzendt/ontvangt met duidelijke foutmeldingen.
+- Privacy en retentie conform ontwerp.
+
+## 10c. Tevreden?
+- PO besluit vastleggen: Go/No‑Go + eventuele vervolgpunten.  
+- Noteren in testrapport en delen met stakeholders.
 
 ---
 
@@ -160,4 +222,3 @@ phpunit
 
 ## 12. Conclusie
 Met dit testplan borgen we de MVP‑kwaliteit en privacy‑principes. De focus ligt op API‑correctheid, eenvoudige E2E‑flow en basis‑NFR’s (performance, CORS, retentie).
-
