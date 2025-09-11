@@ -229,6 +229,26 @@ Responses:
 
 ---
 
+## 📦 File-first mode (shared hosting)
+
+To avoid MySQL connection limits on shared hosting, the API hot paths use files:
+
+- Set in `.env`:
+  - `CACHE_STORE=file`
+  - `CACHE_DRIVER=file`
+  - `SESSION_DRIVER=file`
+  - `QUEUE_CONNECTION=sync`
+- Ensure directory exists: `storage/app/messages/` with permissions for PHP to write.
+- Files:
+  - `feed.json` — ring buffer of latest ~200 messages
+  - `spool.ndjson` — append-only inbox for database flush
+  - `spool.offset` — last flushed byte offset
+  - `seq.txt` — monotone numeric id counter
+- Cron: ensure `php artisan schedule:run` runs every minute. The `messages:flush-spool` task runs every 10 minutes and uses a cache lock.
+
+
+---
+
 ## 🤝 Contributing
 PRs welcome. Keep changes minimal, logics small, and avoid heavy dependencies (the wallpaper must stay tiny).
 

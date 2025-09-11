@@ -1,6 +1,7 @@
 <?php
 namespace App\Console;
 
+use App\Console\Commands\FlushSpool;
 use App\Console\Commands\PurgeOldMessages;
 use App\Models\Message;
 use Illuminate\Console\Scheduling\Schedule;
@@ -10,6 +11,7 @@ class Kernel extends ConsoleKernel {
     /** @var array<class-string> */
     protected $commands = [
         PurgeOldMessages::class,
+        FlushSpool::class,
     ];
 
     protected function schedule(Schedule $schedule): void
@@ -17,6 +19,11 @@ class Kernel extends ConsoleKernel {
         $schedule->call(function () {
             Message::where('created_at', '<', now()->subDays(90))->delete();
         })->daily();
+
+        // Flush spool to DB every 10 minutes without overlapping
+        $schedule->command('messages:flush-spool')
+            ->everyTenMinutes()
+            ->withoutOverlapping();
     }
 
     protected function commands(): void {}

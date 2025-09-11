@@ -3,7 +3,7 @@
 **Projectnaam:** Deskchat live  
 **Auteur:** Senne Visser  
 **Datum:** 2025-09-04  
-**Versie:** 2.1 (niet-technisch)
+**Versie:** 3.0
 
 ---
 
