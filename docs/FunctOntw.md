@@ -27,6 +27,19 @@
 
 ---
 
+<!-- 
+Kijk dit document houd zich al een stuk beter aan de inhoudsopgave van het boek. 
+Kopjes zijn net anders genoemd, maar dat is niet erg.
+Ik mis nog wel een aantal zaken. Namelijk: 
+- Informatieverwerking onder gewenste situatie
+    - de use-cases
+    - use-case tabellen
+    - use-case diagram(men)
+- Planning
+-->
+
+
+
 ## 1. Voorwoord
 Dit document beschrijft **wat** deskchat live doet en waarom. Het systeem bestaat uit een bewegende achtergrond op de computer die live chatberichten toont, en een klein programma waarmee je zelf berichten kunt versturen. Het is bedoeld voor mensen die graag een sociale, interactieve achtergrond willen tijdens het werken.
 
@@ -60,18 +73,22 @@ deskchat live is een chatprogramma dat bestaat uit twee delen:
 ---
 
 ## 4. Gewenste situatie (Hoe moeten systemen communiceren)
-### 4.1 Wat het systeem moet kunnen (MoSCoW)
+
+<!-- Laat een Use case diagram (alleen must haves) zien om een duidelijk overzicht te maken wat het systeem gaat doen. Leg vervolgens het plaatje in de tekst ook nog uit -->
+
+### 4.1 Wat het systeem moet kunnen (MoSCoW) 
+<!-- je gebruikt de Moscow methode maar er zijn geen moscow methode naampjes -->
 
 **Moet hebben (anders werkt het niet)**
 - Achtergrond toont nieuwe berichten van andere gebruikers
-- Gebruikers kunnen berichten typen en versturen via een klein programma
-- Berichten mogen niet te lang zijn (maximaal 280 tekens, zoals Twitter)
-- Gebruikers kunnen een bijnaam kiezen (geen echte naam vereist)
-- Systeem blokkeert scheldwoorden en ongepaste taal
-- Bescherming tegen spam (niet te veel berichten per persoon)
-- Berichten worden automatisch verwijderd na een tijdje (maximaal 90 dagen)
+- Gebruikers kunnen berichten typen en versturen via een klein programma <!-- Klein programma is niet relevant om te noemen, daarmee maak je er namelijk een gecombineerde use-case van. het deel 'klein programma' is een niet-functionele requirement. -->
+- Berichten mogen niet te lang zijn (maximaal 280 tekens, zoals Twitter) <!-- Haakjes wegwerken en het direcht beschrijven, Twitter noemen is niet nodig -->
+- Gebruikers kunnen een bijnaam kiezen (geen echte naam vereist) <!-- Haakjes zijn niet nodig -->
+- Systeem blokkeert scheldwoorden en ongepaste taal <!-- Is dit echt een must have? het functioneert zonder dit ook. Het is niet wenselijk, maar functioneert wel -->
+- Bescherming tegen spam (niet te veel berichten per persoon) <!-- Idem, Echt een Must have? -->
+- Berichten worden automatisch verwijderd na een tijdje (maximaal 90 dagen) <!-- Idem, Echt een Must have? -->
 
-**Zou fijn zijn**
+**Zou fijn zijn** 
 - Berichten laden snel en de achtergrond gebruikt weinig computer-kracht
 - Duidelijke foutmeldingen als er iets mis gaat
 - Het programma stopt met werken als je computer vergrendeld is (bespaart internetverkeer)
@@ -92,7 +109,7 @@ deskchat live is een chatprogramma dat bestaat uit twee delen:
 ---
 
 ### 4.2 Hoe gebruikers het systeem gebruiken
-
+<!-- Laat zien met een activity diagram -->
 **Een gewone gebruiker wil chatten:**
 1. Installeert Wallpaper Engine en zet de deskchat live achtergrond aan
 2. Downloadt het kleine chatprogramma en start het op
@@ -101,7 +118,9 @@ deskchat live is een chatprogramma dat bestaat uit twee delen:
 5. Ziet het bericht verschijnen op de achtergrond, samen met berichten van anderen
 6. Kan altijd nieuwe berichten typen via het icoon onderin het scherm
 
-**Wat er gebeurt als er problemen zijn:**
+<!-- De onderstaande dingen kunnen mooi in usecase tabellen dan weet je ook meteen bij welke usecase deze hoort -->
+
+**Wat er gebeurt als er problemen zijn:** 
 - Te lang bericht → gebruiker krijgt melding "Bericht te lang, maximaal 280 tekens"
 - Scheldwoord gebruikt → gebruiker krijgt melding "Bericht bevat ongepaste taal"
 - Te veel berichten gestuurd → gebruiker krijgt melding "Wacht even voordat je weer een bericht stuurt"
@@ -114,7 +133,7 @@ deskchat live is een chatprogramma dat bestaat uit twee delen:
 
 ---
 
-### 4.3 Wat voor onderdelen er komen
+### 4.3 Wat voor onderdelen er komen <!-- Soortvan Applicaties hoofdstuk -->
 
 **De bewegende achtergrond:**
 - Toont alleen berichten (je kunt er niet in typen)
@@ -158,10 +177,10 @@ deskchat live is een chatprogramma dat bestaat uit twee delen:
 - **Onderhoud:** Minimale tijd voor monitoring en updates en hostingkosten voor api en welcome page (~€ 4 per maand)
 
 ### 5.4 Planning (tot vrijdag 19 september 2025, 23:29)
-- 9–10 sep: Backend MVP afronden (berichten GET/POST, validatie, woordfilter, throttling, retentie).
-- 11–12 sep: Tray-app MVP (verzenden/ontvangen, foutmeldingen, device-id, tray-icoon).
-- 13 sep: Wallpaper (polling, DOM-cap 100, pauze bij vergrendeling/hidden).
-- 14-15 sep: Integratie en E2E tests (happy path + fouten, privacytekst 1e versie).
+- 9–10 sep: Backend MVP afronden (berichten GET/POST, validatie, woordfilter, throttling, retentie). <!-- Dit is al klaar dus? -->
+- 11–12 sep: Tray-app MVP (verzenden/ontvangen, foutmeldingen, device-id, tray-icoon). <!-- Hiermee ben je al begonnen? -->
+- 13 sep: Wallpaper (polling, DOM-cap 100, pauze bij vergrendeling/hidden). <!-- Que? -->
+- 14-15 sep: Integratie en E2E tests (happy path + fouten, privacytekst 1e versie). 
 - 16 sep: Hosting/deploy, CORS check, scheduler, healthcheck, Feedbackronde, finetuning UX/teksten.
 - 17 sep: bufferdag (bugfixes, kleine verbeteringen).
 - 18 sep: Documentatie (korte handleiding, readme, privacy-notitie).
@@ -169,7 +188,7 @@ deskchat live is een chatprogramma dat bestaat uit twee delen:
 
 ---
 
-## 6. Acceptatiecriteria
+## 6. Acceptatiecriteria <!-- Dit zijn een soort testcases, gebruik die in je testrapport -->
 - Wallpaper toont nieuwe berichten binnen ~5 seconden; maximaal ~100 zichtbaar.
 - Tray-app kan bericht (1–280 tekens) met bijnaam versturen; duidelijke foutmelding bij: te lang, woordfilter, rate limit, ontbrekende device-id.
 - API responses conform: 201 bij succes; 400 missing_device_id; 422 validation_failed/profanity_blocked; 429 rate_limited met retry_after.
