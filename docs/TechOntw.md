@@ -134,6 +134,50 @@ flowchart TD
   E --> F[Wacht 2.5s en herhaal]
 ```
 
+### 6.3 Activity diagram — UC2 Bericht versturen
+
+```mermaid
+%% Vereenvoudigd schema (swimlanes gesimuleerd met drie subgraphs)
+flowchart TD
+  subgraph CLIENT[Client]
+    S1([Start])
+    S2[Valideer lengte 1-280]
+    S3{Lengte OK?}
+    S4[/422 te lang/]
+    S5[Headers + body voorbereiden]
+    S6[POST /api/messages]
+  end
+
+  subgraph API[API]
+    S7[Sanitize & trim]
+    S8{Leeg na trim?}
+    S9[/422 validation_failed/]
+    S10[Profanity check]
+    S11{Profanity?}
+    S12[/422 profanity_blocked/]
+    R1[Rate limit check]
+    R2{Limit overschreden?}
+    R3[/429 rate_limited/]
+    DB1[Persist message]
+    DB2[/201 ok/]
+  end
+
+  subgraph CLIENT_END[Client]
+    S13[/Melding succes/]
+    S14([Einde])
+  end
+
+  S1 --> S2 --> S3
+  S3 -- Nee --> S4 --> S14
+  S3 -- Ja --> S5 --> S6 --> S7 --> S8
+  S8 -- Ja --> S9 --> S14
+  S8 -- Nee --> S10 --> S11
+  S11 -- Ja --> S12 --> S14
+  S11 -- Nee --> R1 --> R2
+  R2 -- Ja --> R3 --> S14
+  R2 -- Nee --> DB1 --> DB2 --> S13 --> S14
+```
+
 ---
 
 ## 7. Ontwikkelomgeving
