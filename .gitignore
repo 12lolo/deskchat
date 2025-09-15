@@ -23,3 +23,13 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# Laravel compiled caches (never commit)
+/bootstrap/cache/*.php
+
+# Runtime logs and compiled views (not in VCS)
+/storage/logs/*
+!/storage/logs/.gitignore
+/storage/framework/views/*
+!/storage/framework/.gitignore
+!/storage/framework/views/.gitignore

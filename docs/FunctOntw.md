@@ -18,6 +18,8 @@
    4.1 Wat het systeem moet kunnen (MoSCoW)  
    4.2 Hoe gebruikers het systeem gebruiken  
    4.3 Wat voor onderdelen er komen
+   4.4 Use-cases
+   4.5 Use-case diagram
 5. Gevolgen en impact  
    5.1 Voor gebruikers  
    5.2 Voor beheer  
@@ -32,10 +34,9 @@ Kijk dit document houd zich al een stuk beter aan de inhoudsopgave van het boek.
 Kopjes zijn net anders genoemd, maar dat is niet erg.
 Ik mis nog wel een aantal zaken. Namelijk: 
 - Informatieverwerking onder gewenste situatie
-    - de use-cases
-    - use-case tabellen
-    - use-case diagram(men)
-- Planning
+    - de use-cases ✅
+    - use-case tabellen ✅
+    - use-case diagram(men) ✅
 -->
 
 
@@ -58,7 +59,7 @@ deskchat live is een chatprogramma dat bestaat uit twee delen:
 
 ---
 
-## 3. Huidige situatie (Hoe communiceren systemen)
+## 3. Huidige situatie
 ### 3.1 Wat er nu is
 - Er bestaan websites (deskchat.live) maar er draait nog geen chatsysteem
 - Mensen kunnen Wallpaper Engine installeren voor bewegende achtergronden
@@ -72,14 +73,13 @@ deskchat live is een chatprogramma dat bestaat uit twee delen:
 
 ---
 
-## 4. Gewenste situatie (Hoe moeten systemen communiceren)
+## 4. Gewenste situatie
 
 <!-- Laat een Use case diagram (alleen must haves) zien om een duidelijk overzicht te maken wat het systeem gaat doen. Leg vervolgens het plaatje in de tekst ook nog uit -->
 
-### 4.1 Wat het systeem moet kunnen (MoSCoW) 
-<!-- je gebruikt de Moscow methode maar er zijn geen moscow methode naampjes -->
+### 4.1 Wat het systeem moet kunnen (MoSCoW)
 
-**Moet hebben (anders werkt het niet)**
+**Must have**
 - Achtergrond toont nieuwe berichten van andere gebruikers
 - Gebruikers kunnen berichten typen en versturen via een klein programma <!-- Klein programma is niet relevant om te noemen, daarmee maak je er namelijk een gecombineerde use-case van. het deel 'klein programma' is een niet-functionele requirement. -->
 - Berichten mogen niet te lang zijn (maximaal 280 tekens, zoals Twitter) <!-- Haakjes wegwerken en het direcht beschrijven, Twitter noemen is niet nodig -->
@@ -88,20 +88,18 @@ deskchat live is een chatprogramma dat bestaat uit twee delen:
 - Bescherming tegen spam (niet te veel berichten per persoon) <!-- Idem, Echt een Must have? -->
 - Berichten worden automatisch verwijderd na een tijdje (maximaal 90 dagen) <!-- Idem, Echt een Must have? -->
 
-**Zou fijn zijn** 
+**Could have** 
 - Berichten laden snel en de achtergrond gebruikt weinig computer-kracht
 - Duidelijke foutmeldingen als er iets mis gaat
 - Het programma stopt met werken als je computer vergrendeld is (bespaart internetverkeer)
 - Informatie over privacy op de website
 
-**Zou leuk zijn (misschien later)**
+**Won't have, mby later**
 - **Meerdere chatruimtes**: bijvoorbeeld apart voor verschillende onderwerpen
 - **Plaatjes delen**: kleine animaties (GIFs) kunnen delen via links
 - Eenvoudige smileys in berichten
 
 **Komt er niet (te ingewikkeld voor nu)**
-- Inloggen met wachtwoorden
-- Profielpagina's van gebruikers
 - Bestanden uploaden
 - Berichten die alleen jij kunt lezen
 - Moderatoren die berichten kunnen verwijderen
@@ -158,6 +156,90 @@ deskchat live is een chatprogramma dat bestaat uit twee delen:
 
 ---
 
+### 4.4 Use-cases
+
+Onderstaande use-cases beschrijven de primaire (must have) interacties.
+
+#### Overzicht
+| ID  | Naam | Korte beschrijving |
+|-----|------|--------------------|
+| UC1 | Bijnaam kiezen | Gebruiker kiest (en eventueel wijzigt) een bijnaam vóór het verzenden van berichten. |
+| UC2 | Bericht versturen | Gebruiker verstuurt een nieuw chatbericht dat wordt gevalideerd en verspreid. |
+| UC3 | Berichten bekijken | Wallpaper / client haalt periodiek nieuwste berichten op en toont max 100. |
+| UC4 | Automatische retentie | Systeem verwijdert berichten ouder dan de ingestelde bewaartermijn (max 90 dagen). |
+
+#### UC1 — Bijnaam kiezen
+| Veld | Waarde |
+|------|--------|
+| Versie | 1.0 |
+| Actor | Gebruiker |
+| Preconditie | Client is gestart; netwerk beschikbaar. |
+| Scenario | 1. Gebruiker opent chatvenster.<br>2. Systeem toont invoerveld voor bijnaam (prefill laatste keuze indien aanwezig).<br>3. Gebruiker voert bijnaam (1–32 tekens, geen alleen spaties) in.<br>4. Gebruiker bevestigt keuze.<br>5. Systeem slaat bijnaam lokaal op (niet op server) en markeert clientstatus 'klaar om te posten'. |
+| Uitzonderingen | a. Ongeldige invoer (te lang / leeg / alleen spaties) → Systeem toont foutmelding en blijft in stap 3.<br>b. Netwerk niet beschikbaar (geen effect; bijnaam kan alsnog lokaal opgeslagen worden). |
+| Niet-functionele eisen | Validatie gebeurt client-side zonder merkbare vertraging (<100ms). |
+| Postconditie | Geldige bijnaam staat klaar voor gebruik bij UC2. |
+
+#### UC2 — Bericht versturen
+| Veld | Waarde |
+|------|--------|
+| Versie | 1.0 |
+| Actor | Gebruiker |
+| Preconditie | Geldige bijnaam gekozen (UC1); client heeft device-id; API online. |
+| Scenario | 1. Gebruiker typt bericht (1–280 tekens).<br>2. Gebruiker klikt Verzenden.<br>3. Client voegt metadata toe (device-id, bijnaam) en verstuurt POST naar API.<br>4. Server valideert lengte en karakterset.<br>5. Server voert profanity controle uit.<br>6. Server controleert rate limit (per device/ip).<br>7. Server slaat bericht op en retourneert 201 + payload (id, timestamp, nickname, text).<br>8. Client toont succes (optioneel leeg veld). |
+| Uitzonderingen | a. Lengte ongeldig → 422 validation_failed (client toont melding).<br>b. Profanity gedetecteerd → 422 profanity_blocked (melding).<br>c. Rate limit overschreden → 429 rate_limited + retry_after (client toont wachttijd).<br>d. Ontbrekende / corrupte device-id → 400 missing_device_id (client genereert nieuwe id en herhaalt vanaf stap 1).<br>e. Netwerkfout / timeout → Client toont tijdelijke fout en biedt opnieuw verzenden.<br>f. Server 5xx → Client toont generieke fout, geen retry-spam (backoff). |
+| Niet-functionele eisen | Responstijd API p95 < 500ms bij normaal gebruik; foutmeldingen zijn duidelijke NL tekst; geen PII verstuurd. |
+| Postconditie | Bericht staat opgeslagen en wordt beschikbaar voor ophalen (UC3). |
+
+#### UC3 — Berichten bekijken
+| Veld | Waarde |
+|------|--------|
+| Versie | 1.0 |
+| Actor | Wallpaper / Kijkende gebruiker |
+| Preconditie | Client draait; API online. |
+| Scenario | 1. Wallpaper initieert poll (of fetch) elke 3–5 seconden.<br>2. Client vraagt berichten (met since-id of timestamp) op.<br>3. Server retourneert lijst met nieuwste berichten (gesorteerd, max window).<br>4. Client voegt nieuwe berichten toe aan weergave.<br>5. Client verwijdert lokaal oudste berichten zodat er max ~100 zichtbaar blijven.<br>6. Weergave wordt geüpdatet zonder hapering. |
+| Uitzonderingen | a. Geen nieuwe berichten → Client wacht volgende poll (stil).<br>b. Netwerkfout → Client toont niets extra en probeert later opnieuw (exponentiële backoff max X).<br>c. API error 5xx → Log lokaal, volgende poll doorgaan.<br>d. Scherm vergrendeld / tab hidden → Polling gepauzeerd (energiespaar). |
+| Niet-functionele eisen | p95 fetch < 400ms; CPU gebruik wallpaper minimaal (<5%); geen memory leak (stabiel aantal DOM-nodes). |
+| Postconditie | Gebruiker heeft recent overzicht; interne state bevat laatste id/timestamp. |
+
+#### UC4 — Automatische retentie
+| Veld | Waarde |
+|------|--------|
+| Versie | 1.0 |
+| Actor | Systeem (scheduler / onderhoudsproces) |
+| Preconditie | Scheduler actief; database bereikbaar. |
+| Scenario | 1. Scheduler start dagelijks (of elk uur).<br>2. Proces selecteert berichten ouder dan X dagen (≤90).<br>3. Verwijdert geselecteerde berichten permanent.<br>4. Logt aantallen verwijderde records.<br>5. (Optioneel) Optimaliseert indices / vacuüm. |
+| Uitzonderingen | a. Database niet bereikbaar → Log fout, retry volgende run.<br>b. Verwijderactie gedeeltelijk gelukt → Log aantallen; geen rollback nodig als per batch.<br>c. Config fout (negatieve leeftijd) → Proces stopt en logt kritieke fout. |
+| Niet-functionele eisen | Run duurt < 1 minuut bij verwacht volume; geen waarneembare impact op posting latency. |
+| Postconditie | Alleen recente berichten blijven beschikbaar (privacy & performance). |
+
+Referentie naar Acceptatiecriteria: UC2 & UC3 dekken real-time gedrag; UC2 uitzonderingen koppelen direct aan foutcodes; UC4 aan retentie; UC1 aan voorwaarde voor posten.
+
+---
+
+### 4.5 Use-case diagram
+
+```plantuml
+@startuml
+left to right direction
+actor "Gebruiker" as User
+actor "Systeem" as System
+
+usecase "Bijnaam kiezen" as UC1
+usecase "Bericht versturen" as UC2
+usecase "Berichten bekijken" as UC3
+usecase "Automatische retentie" as UC4
+
+User --> UC1
+User --> UC2
+User --> UC3
+System --> UC4
+UC2 ..> UC1 : <<include>>
+@enduml
+
+```
+
+---
+
 ## 5. Gevolgen en impact
 ### 5.1 Voor gebruikers
 - **Voordelen:** Leuke, interactieve achtergrond tijdens het werken; geen ingewikkelde accounts
@@ -176,7 +258,9 @@ deskchat live is een chatprogramma dat bestaat uit twee delen:
 - **Ontwikkeling:** Geen extra kosten (gebruikt bestaande hosting)
 - **Onderhoud:** Minimale tijd voor monitoring en updates en hostingkosten voor api en welcome page (~€ 4 per maand)
 
-### 5.4 Planning (tot vrijdag 19 september 2025, 23:29)
+---
+
+## 6. Planning (tot vrijdag 19 september 2025, 23:29)
 - 9–10 sep: Backend MVP afronden (berichten GET/POST, validatie, woordfilter, throttling, retentie). <!-- Dit is al klaar dus? -->
 - 11–12 sep: Tray-app MVP (verzenden/ontvangen, foutmeldingen, device-id, tray-icoon). <!-- Hiermee ben je al begonnen? -->
 - 13 sep: Wallpaper (polling, DOM-cap 100, pauze bij vergrendeling/hidden). <!-- Que? -->
@@ -188,8 +272,8 @@ deskchat live is een chatprogramma dat bestaat uit twee delen:
 
 ---
 
-## 6. Acceptatiecriteria <!-- Dit zijn een soort testcases, gebruik die in je testrapport -->
-- Wallpaper toont nieuwe berichten binnen ~5 seconden; maximaal ~100 zichtbaar.
+## 7. Acceptatiecriteria <!-- Dit zijn een soort testcases, gebruik die in je testrapport -->
+- Wallpaper toont nieuwe berichten binnen ~10 seconden; maximaal ~30 zichtbaar.
 - Tray-app kan bericht (1–280 tekens) met bijnaam versturen; duidelijke foutmelding bij: te lang, woordfilter, rate limit, ontbrekende device-id.
 - API responses conform: 201 bij succes; 400 missing_device_id; 422 validation_failed/profanity_blocked; 429 rate_limited met retry_after.
 - Geen accounts; geen persoonsgegevens opgeslagen; alleen anonieme device-id en ip_hmac (hash van IP) voor misbruikpreventie.

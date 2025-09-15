@@ -1,92 +1,127 @@
-# Projectplan — deskchat live (samenvatting)
+# Projectplan — Deskchat live
 
-**Projectnaam:** Deskchat live  
-**Auteur:** Senne Visser  
-**Datum:** 2025-09-04  
-**Versie:** 3.0
-
----
-
-<!-- 
-Kijk naar pagina 16 van het boek Software Developer en houd je eerst eens aan de inhoudsopgave structuur van dat voorbeeld.
-De kopjes en subkopjes die je zo kan overnemen staan daarin. Wat is de reden dat je die niet overneemt?
-Op pagina 23 staat een toelichting van de kopjes binnen de projectomschrijving.
-Er zitten al een hoop delen in, maar net even anders. Voor je afstuderen raad ik aan om een template document te maken waarin je alle benodigde elementen zet, in de juiste volgorde en met een toelichting wat erin moet.
--->
-
-<!-- Inleiding mis ik -->
-
-
-<!-- Projectomschrijving -->
-
-<!-- Dit is een stuk resultaat -->
-## Wat is deskchat live?
-Deskchat live is een leuke, sociale achtergrond voor je computer. Je ziet korte, openbare berichten van anderen direct op je bureaublad verschijnen. Zelf kun je berichten plaatsen via een klein programmaatje in de systeemtray. Geen accounts, geen gedoe—gewoon meelezen en korte updates delen.
+Projectnaam: Deskchat live  
+Auteur: Senne Visser  
+Datum: 2025-09-15  
+Versie: 4.0
 
 ---
 
-<!-- Doelen en een deel aanleiding -->
-## Waarom dit project?
-Veel mensen werken lang achter hun computer en missen informele, lichte sociale interactie. Bestaande chatapps vragen aandacht en onderbreken je werk. Deskchat live biedt juist een rustige, “ambient” manier om verbonden te blijven zonder je workflow te verstoren.
+## Inleiding
+Dit projectplan beschrijft het waarom, wat en hoe van Deskchat live: een lichte, sociale achtergrond voor het bureaublad die korte openbare berichten toont. Het document leidt de uitvoering (planning, scope, kwaliteitsbewaking) en biedt de opdrachtgever duidelijkheid over verwachtingen, mijlpalen en randvoorwaarden. We hanteren een iteratieve aanpak met een klein, toetsbaar MVP, gevolgd door korte verbetercycli.
 
 ---
 
-<!-- Resultaat -->
-## Wat wil ik bereiken?
-- Een werkende eerste versie waarmee gebruikers:
-  - nieuwe berichten op hun achtergrond zien verschijnen;
-  - zelf korte berichten kunnen plaatsen met een bijnaam;
-  - duidelijke meldingen krijgen als iets niet lukt (te lang, te vaak, ongepast).
-- Een prettige ervaring die nauwelijks stoort of vertraagt.
-- Eenvoudige privacy: geen accounts, geen persoonsgegevens; alleen wat strikt nodig is om misbruik te beperken.
+## Projectomschrijving
+
+### Aanleiding
+Mensen werken lang achter een computer en missen informele, lichte sociale interactie. Bestaande chatapps onderbreken focus en vragen actieve deelname. Deskchat live biedt een passieve, niet-storende “ambient” stroom van korte berichten op de achtergrond.
+
+### Doelen
+- Productdoelen
+  - Een werkende eerste versie (MVP) waarin gebruikers nieuwe berichten op de achtergrond zien en zelf korte berichten kunnen plaatsen met een bijnaam.
+  - Duidelijke feedback bij beperkingen (lengte, frequentie, ongepast taalgebruik).
+  - Lichtgewicht ervaring: lage systeemimpact, geen afleidende notificaties.
+- Projectdoelen
+  - Heldere oplevering met korte handleiding en privacy-notitie in begrijpelijke taal.
+  - Basisarchitectuur die uitbreidbaar is zonder herbouw (bv. moderatie later mogelijk).
+
+### Resultaat
+- Opleveringen
+  - Een live werkende versie van Deskchat live:
+    - Publieke read-only weergave op de achtergrond van recente berichten.
+    - Eenvoudige tray-/client-invoer voor het plaatsen van korte tekstberichten (1–280 tekens) met bijnaam.
+    - Basisregels: lengtebeperking, throttling tegen spam, woordfilter tegen grove taal.
+  - Documentatie: korte gebruikershandleiding en privacy-notitie (AVG-proof, beknopt).
+  - Koppeling met test- en monitoring-hulpmiddelen (healthcheck, logging).
+- Acceptatiecriteria (samengevat)
+  - Nieuwe berichten verschijnen binnen 2–5 s na plaatsing in de achtergrondweergave.
+  - 99% van de geldige post-acties resulteert binnen 500 ms in een bevestiging (API) onder normale belasting.
+  - Ongeldige input geeft een duidelijke foutmelding met oorzaak (te lang, te vaak, ongepast).
+  - Er worden geen accounts of persistente persoonlijke gegevens opgeslagen; IP’s worden geanonimiseerd conform privacy-notitie.
+
+### Afbakening
+- In scope
+  - Eén openbare chatstroom; tekstberichten 1–280 tekens; bijnaam; basisfilters; eenvoudige rate limiting.
+  - Web-achtergrond (wallpaper) die berichten toont; simpele invoer via client/tray.
+- Buiten scope (nu)
+  - Accounts/login, rechten/rollen, mediabestanden, geavanceerde moderatie of dashboards, encryptie end-to-end, meertalige UI. Deze kunnen later worden toegevoegd.
+
+### Risico’s
+- Misbruik/spam: rate limiting, woordfilter, simpele heuristieken; logging voor misbruikdetectie.
+- Afleiding/te druk: rustige typografie/animatie, beperkte frequentie, korte berichten.
+- Privacy-onzekerheid: minimale dataverwerking, IP-anonimisering, duidelijke privacy-notitie.
+- Performance/kosten: lightweight backend, eenvoudige caching; limieten op berichtgrootte en retentie.
+- Geen mac of linux support. Mischien later maar niet in deze scope
+
+### Effecten
+- Positief: lichte sociale verbondenheid zonder actieve chat; lage instap, geen accounts.
+- Negatief/te mitigeren: mogelijke afleiding; mitigatie via rustige weergave en throttling.
+- Organisatorisch: geen beheerlast voor accounts; wel basismonitoring/logging nodig.
+
+### Randvoorwaarden (PvE samengevat)
+- Functioneel
+  - Berichten aanmaken, valideren (lengte, content, frequentie), en publiceren op de feed.
+  - Achtergrondweergave toont recente berichten in chronologische volgorde; auto-refresh.
+  - Foutafhandeling met duidelijke, korte meldingen in NL/EN (minimaal NL).
+- Niet-functioneel
+  - Privacy/AVG: geen accounts; IP’s gehashed/afgekapt; retentie-instellingen gedocumenteerd.
+  - Prestatie: P95 API latency < 500 ms bij normaal gebruik; UI update binnen .5 tot 10 seconden, is aan te passen.
+  - Beschikbaarheid: doel 99% tijdens pilot; geen harde 24/7-SLA.
+  - Beveiliging: invoerfiltering, basisrate limiting, geen gevoelige PII-opslag.
+- Technisch
+  - Huidige stack uit dit repo (Laravel API, eenvoudige frontend); geen extra vendor lock-in.
+  - Simpele deployment op goedkope hosting/VPS; logging beschikbaar.
 
 ---
 
-## Resultaat (opleveringen)
-- Een live werkende versie van deskchat live die:
-  - de laatste berichten laat zien op de achtergrond (alleen lezen);
-  - via een klein programma berichten kan versturen (simpele invoer, foutmelding bij problemen);
-  - basisregels hanteert: korte berichten, geen scheldwoorden, niet spammen.
-- Korte handleiding en een privacy-notitie in gewone taal.
+## Fasering en planning (iteratief)
+- Fase 0 – Inceptie (0.5 week)
+  - Doelen, scope, PvE aanscherpen; ontwerp-schetsen; acceptatiecriteria vastleggen.
+- Fase 1 – MVP API + Wallpaper (1.5 week)
+  - Berichten-API, validatie, woordfilter; eenvoudige achtergrondweergave met live updates.
+- Fase 2 – Client/tray-invoer (1 week)
+  - Simpele invoerapp; foutmeldingen; throttling zichtbaar gemaakt aan gebruiker.
+- Fase 3 – Pilot & feedback (1 week)
+  - Beperkte uitrol; meten, verzamelen feedback; kleine UX/performance fixes.
+- Fase 4 – Oplevering (0.5 week)
+  - Documentatie (handleiding, privacy); stabilisatie; release.
+
+Mijlpalen
+- M1: MVP feed zichtbaar met echte data (einde fase 1)
+- M2: Berichten plaatsen via client met validaties (einde fase 2)
+- M3: Pilotresultaten verwerkt, release candidate (einde fase 3)
+- M4: Publieke release + documentatie (einde fase 4)
 
 ---
 
-## Scope
-- Wel: één openbare chatruimte, tekstberichten (1–280 tekens), bijnaam, eenvoudige filters en limieten.
-- Niet (nu): accounts, moderatie-dashboard, bestanden of media uploaden, geavanceerde functies. Dit kan later.
+## Projectbeheersing
+
+### Tijd
+- Iteraties van 1 week; dagelijkse korte voortgangscheck; burndown per fase.
+- Wijzigingen via light change control: impact op scope/tijd vooraf inschatten en vastleggen.
+
+### Geld
+- Doel: minimale kosten (low-cost hosting, geen betaalde third-party services voor MVP).
+- Kostenposten: hosting/VPS, domein, basismonitoring/logging. Uitgaven worden per fase geëvalueerd.
+
+### Kwaliteit
+- Definition of Done: tests groen, lint schoon, performance- en privacy-checks uitgevoerd, documentatie bijgewerkt.
+- Testniveaus: unit + feature tests; rooktest van API en wallpaper; pilotfeedback.
+- Referentie: docs/TestPlan.md en docs/TechOntw.md voor test- en technische details.
+
+### Informatie
+- Communicatie: korte wekelijkse update (voortgang, risico’s, besluiten).
+- Documentatie: dit projectplan, FunctOntw (functioneel ontwerp), TechOntw (technisch ontwerp), TestPlan, privacy-notitie.
+- Logging/monitoring: basis logboeken en healthchecks; incidentenregistratie in issue tracker.
+
+### Organisatie
+- Rollen
+  - Opdrachtgever/PO: Senne Visser (prioritering, acceptatie).
+  - Ontwikkeling: Senne Visser.
+  - Pilotgebruikers: geselecteerde kleine groep voor feedback.
+- Besluitvorming: PO beslist over scopewijzigingen; wijzigingen worden gelogd met impact op planning.
 
 ---
 
-## Aanpak & globale planning
-1) Idee uitwerken en ontwerp (korte beschrijving en doelen).  
-2) Eerste werkende versie bouwen en testen.  
-3) Achtergrond en tray-app samen laten werken.  
-4) Korte proefperiode, feedback verzamelen en bijwerken.  
-5) Publiceren met beknopte uitleg en privacy-notitie.
-
----
-
-## Succescriteria (wanneer is het goed?)
-- Je ziet nieuwe berichten binnen enkele seconden op je achtergrond.
-- Berichten plaatsen werkt simpel en betrouwbaar, met duidelijke foutmeldingen.
-- Het systeem voelt licht en niet-storend aan tijdens het werken.
-- Privacy is begrijpelijk uitgelegd en er worden geen onnodige gegevens bewaard.
-
----
-
-## Privacy in het kort
-- Geen accounts en geen persoonlijke profielen.
-- Alleen anonieme gegevens die nodig zijn om misbruik te voorkomen.
-- Heldere uitleg op de website over welke gegevens kortstondig verwerkt worden.
-
----
-
-## Risico’s (kort) en aanpak
-- Misbruik/spam: eenvoudige beperkingen en woordfilters.
-- Te druk/afleidend: rustige weergave en korte berichten.
-- Onzekerheid over privacy: duidelijke, korte uitleg en terughoudend met gegevens.
-
----
-
-## Doelgroep
-Mensen die graag een sociale, levendige achtergrond willen tijdens het werken, zonder chatvensters of notificaties die de focus doorbreken.
+Einde document.
