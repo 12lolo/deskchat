@@ -16,6 +16,7 @@ return [
         'darn',
         'shoot',
         'frick',
+        '67',
     ],
 
     // Optional external service configuration (not used by default logic)

@@ -3,6 +3,7 @@
 **Project**: deskchat live  
 **Versie**: 1.3  
 **Datum**: 2025-09-09  
+**Opdrachtgever:** Sven Imholz  
 **Auteur**: Senne Visser  
 **Website**: https://deskchat.live  
 **API**: https://api.deskchat.live

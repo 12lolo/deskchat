@@ -152,13 +152,18 @@
         }
         .watermark { position: absolute; bottom: 2vh; left: 5vw; opacity: 0.3; color: var(--muted); font-size: 12px; }
 
-        /* Embeds (smaller) */
-    :root { --embed-min-h: 90px; --embed-max-h: 32vh; }
-    .embed { margin-top: 6px; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 14px -6px var(--shadow); width: 100%; }
-    .embed.tenor { width: 100%; max-width: 100%; min-height: var(--embed-min-h); max-height: var(--embed-max-h); }
-    .embed-media { display: block; width: 100%; height: auto; object-fit: contain; background: rgba(255,255,255,0.04); max-height: var(--embed-max-h); }
-    .embed img.embed-media { min-height: var(--embed-min-h); }
-    video.embed-media { max-height: var(--embed-max-h); }
+        /* Embeds (smaller, no cropping) */
+        :root { --embed-min-h: 90px; --embed-max-h: 30vh; }
+        .embed { margin-top: 6px; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 14px -6px var(--shadow); width: 100%; position: relative; background: rgba(255,255,255,0.03); }
+        /* Tenor wrapper: allow internal script to size but clamp height */
+        .embed.tenor { width: 100%; max-width: 100%; min-height: var(--embed-min-h); max-height: var(--embed-max-h); display: flex; align-items: center; justify-content: center; }
+        .embed.tenor .tenor-gif-embed { max-height: var(--embed-max-h) !important; width: 100% !important; }
+        /* Direct media */
+        .embed-media { display: block; width: 100%; height: 100%; object-fit: contain; background: rgba(255,255,255,0.04); max-height: var(--embed-max-h); }
+        .embed img.embed-media { min-height: var(--embed-min-h); height: auto; }
+        video.embed-media { max-height: var(--embed-max-h); height: auto; }
+        /* Avoid layout jump if image loads very tall */
+        .embed.pending { aspect-ratio: 16 / 9; }
         @media (prefers-reduced-motion: reduce) {
             #feed { scroll-behavior: auto; }
             .msg { transition: none; }
@@ -203,7 +208,7 @@
         <div class="headline">deskchat live</div>
         <div id="feed" aria-live="polite" aria-busy="false"></div>
         <div class="status" id="status">Connecting…</div>
-    <div class="watermark">Keys: D debug · +/- size · [ ] position · T theme</div>
+    <div class="watermark">Keys: +/- size · [ ] position · T theme</div>
     </div>
     <script>
         (function () {
@@ -225,7 +230,7 @@
             let lastId = 0;
             let timer = null;
             let backoff = POLL_MS;
-            let debug = false;
+            // debug removed
             let hadTenor = false;
             // Force bottom lock window to handle late layout (embeds/fonts)
             let forceBottomUntil = 0;
@@ -312,7 +317,7 @@
                 } catch { return String(text ?? ''); }
             }
 
-            function log(...a) { if (debug) console.log('[deskchat]', ...a); }
+            // debug logging removed
 
             function setStatus(text) {
                 status.textContent = text;
@@ -515,8 +520,7 @@
             });
 
             window.addEventListener('keydown', (e) => {
-                // Debug toggle
-                if (e.key === 'd' || e.key === 'D') { debug = !debug; setStatus(debug ? 'Debug ON' : 'Debug OFF'); return; }
+                // debug toggle removed
                 // +/- to change message size
                 if (e.key === '+' || e.key === '=') {
                     const v = Math.min(1.5, parseFloat(msgScale.value || '1') + 0.05).toFixed(2);

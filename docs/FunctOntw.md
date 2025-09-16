@@ -3,6 +3,7 @@
 **Project:** deskchat live  
 **Versie:** 2.1  
 **Datum:** 2025-09-09  
+**Opdrachtgever:** Sven Imholz  
 **Auteur:** Senne Visser  
 **Website:** https://deskchat.live
 
@@ -49,22 +50,18 @@ deskchat live is een chatprogramma dat bestaat uit twee delen:
 ---
 
 ## 3. Huidige situatie
-### 3.1 Wat er nu is
-- Er bestaan websites (deskchat.live) maar er draait nog geen chatsysteem
-- Mensen kunnen Wallpaper Engine installeren voor bewegende achtergronden
-- Er is webhosting beschikbaar om het systeem te laten draaien
-
-### 3.2 Wat er ontbreekt
-- Een manier om live berichten te delen tussen gebruikers
-- Een programma waarmee mensen berichten kunnen typen
-- Een systeem dat berichten opslaat en doorgeeft
-- Bescherming tegen spam en ongepast taalgebruik
+### 3.1 informatieverwerking
+Er is geen bestaand systeem met dezelfde opzet; vergelijkbare alternatieven vereisen browser of accounts.   
+### 3.2 Aplicaties
+Geen bestaande applicaties specifiek voor deze behoefte binnen het project. Wel word er gebruik gemaakt van de Wallpaper Engine, dat bestaat al.     
+### 3.3 Infrastucture
+Bestaande Hostinger webhosting (PHP/MySQL) is beschikbaar.  
 
 ---
 
 ## 4. Gewenste situatie
 
-### 4.1 Wat het systeem moet kunnen (MoSCoW)
+### 4.1 Requirements (MoSCoW)
 Zie 4.4 voor de use-cases tabellen.
 
 **Must have**
@@ -84,15 +81,13 @@ Zie 4.4 voor de use-cases tabellen.
 - **Meerdere chatruimtes**: bijvoorbeeld apart voor verschillende onderwerpen
 - **Plaatjes delen**: kleine animaties (GIFs) kunnen delen via links
 - Eenvoudige smileys in berichten
-
-**Komt er niet (te ingewikkeld voor nu)**
 - Bestanden uploaden
 - Berichten die alleen jij kunt lezen
 - Moderatoren die berichten kunnen verwijderen
 
 ---
+### 4.2 Informatieverwerking
 
-### 4.2 Hoe gebruikers het systeem gebruiken
 ```plantuml
 @startuml
 left to right direction
@@ -112,6 +107,9 @@ UC2 ..> UC1 : <<include>>
 @enduml
 
 ```
+
+<img src="https://deskchat.live/images/usecase.png">    
+
 **Een gebruiker die wil chatten doet het volgende:**
 1. Installeert Wallpaper Engine en zet de deskchat live achtergrond aan
 2. Downloadt tray app en start het op
@@ -120,7 +118,7 @@ UC2 ..> UC1 : <<include>>
 5. Ziet het bericht verschijnen op de achtergrond, samen met berichten van anderen
 
 
-### 4.3 Soortvan Applicaties
+### 4.3 Applicaties
 
 **De bewegende achtergrond:**
 - Toont alleen berichten (je kunt er niet in typen)
@@ -203,53 +201,33 @@ Onderstaande use-cases beschrijven de primaire (must have) interacties.
 
 Referentie naar Acceptatiecriteria: UC2 & UC3 dekken real-time gedrag; UC2 uitzonderingen koppelen direct aan foutcodes; UC4 aan retentie; UC1 aan voorwaarde voor posten.
 
----
-
-### 4.5 Use-case diagram
-
-```plantuml
-@startuml
-left to right direction
-actor "Gebruiker" as User
-actor "Systeem" as System
-
-usecase "Bijnaam kiezen" as UC1
-usecase "Bericht versturen" as UC2
-usecase "Berichten bekijken" as UC3
-usecase "Automatische retentie" as UC4
-
-User --> UC1
-User --> UC2
-User --> UC3
-System --> UC4
-UC2 ..> UC1 : <<include>>
-@enduml
-
-```
 
 ---
 
-## 5. Gevolgen en impact
-### 5.1 Voor gebruikers
-- **Voordelen:** Leuke, interactieve achtergrond tijdens het werken; geen ingewikkelde accounts
-- **Nadelen:** Alleen Windows computers; vereist Wallpaper Engine (kost een paar euro)
-- **Privacy:** Geen persoonlijke gegevens opgeslagen; berichten zijn openbaar voor iedereen
-- **Gebruik:** Geschikt voor mensen die van sociale interactie houden tijdens werken
+## 5. Consequenties
 
-### 5.2 Voor beheer
-- **Onderhoud:** Minimaal; systeem draait grotendeels automatisch
-- **Moderatie:** Automatische filter voor scheldwoorden; handmatige moderatie niet vereist
-- **Kosten:** Gebruikt bestaande webhosting; geen extra kosten
-- **Schaalbaarheid:** Kan groeien naar meer gebruikers zonder grote aanpassingen
+### 5.1 Organisatorische consequenties
+- **Gebruik & doelgroep:** De chat is **openbaar**; alle berichten zijn voor iedereen zichtbaar. Er zijn **geen accounts** of privéberichten. Geschikt voor gebruikers die een sociale, interactieve achtergrond willen tijdens het werken.
+- **Moderatieproces:** Misbruikpreventie is **automatisch** (woordenfilter en snelheidslimiet). Bij incidenten wordt de woordenlijst bijgewerkt en/of wordt een eenvoudige ban toegepast op device-id/IP-hash.
+- **Beheerlast:** **Minimaal.** Terugkerende taken: health-check controleren, retentie/logs nalopen en periodieke updates uitvoeren.
+- **Training & support:** Geen formele training nodig; een **korte handleiding (±1 pagina)** volstaat voor installatie en gebruik van de tray-app.
+- **Platformkeuze (impact gebruiker):** Werkt op **Windows** en vereist **Wallpaper Engine** (externe applicatie).
 
-### 5.3 Kosten
+### 5.2 Technische consequenties
+- **Afhankelijkheden:** Publieke **HTTPS-API**, tray-app en wallpaper. **Scheduler/cron (1× per minuut)** vereist voor automatische retentie.
+- **Prestaties & capaciteit:** De achtergrond haalt periodiek berichten op (ca. 3–5 s) en toont **maximaal 100 recente berichten** om netwerk- en CPU-gebruik laag te houden.
+- **Beveiliging & privacy:** Snelheidslimieten per device en IP-hash; woordenfilter actief; **geen ruwe IP-adressen** in applicatie/DB (hosting-accesslogs kunnen IP’s bevatten en worden in de privacy-notitie benoemd).
+- **Schaalbaarheid:** Kan meegroeien binnen de bestaande hosting; uitbreidingen zoals meerdere rooms of GIF-links zijn **optioneel** en hebben beperkte beheerimpact.
+- **Platformbeperking:** Functionaliteit is niet gegarandeerd op niet-Windows-platformen of zonder Wallpaper Engine.
+
+## 6. Kosten
 - **Gebruikers:** Wallpaper Engine (eenmalig ~€4), verder gratis
 - **Ontwikkeling:** Geen extra kosten (gebruikt bestaande hosting)
 - **Onderhoud:** Minimale tijd voor monitoring en updates en hostingkosten voor api en welcome page (~€ 4 per maand)
 
 ---
 
-## 6. Planning (tot vrijdag 19 september 2025, 23:29)
+## 7. Planning (tot vrijdag 19 september 2025, 23:29)
 - 9–10 sep: Backend MVP afronden (berichten GET/POST, validatie, woordfilter, throttling, retentie). 
 - 11–12 sep: Tray-app MVP (verzenden/ontvangen, foutmeldingen, device-id, tray-icoon).
 - 13 sep: Wallpaper (polling, DOM-cap 100, pauze bij vergrendeling/hidden).

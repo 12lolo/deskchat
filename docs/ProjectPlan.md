@@ -1,6 +1,7 @@
 # Projectplan — Deskchat live
 
 Projectnaam: Deskchat live  
+Opdrachtgever: Sven Imholz  
 Auteur: Senne Visser  
 Datum: 2025-09-15  
 Versie: 4.0
@@ -75,23 +76,48 @@ Mensen werken lang achter een computer en missen informele, lichte sociale inter
 
 ---
 
-## Fasering en planning (iteratief)
-- Fase 0 – Inceptie (0.5 week)
-  - Doelen, scope, PvE aanscherpen; ontwerp-schetsen; acceptatiecriteria vastleggen.
-- Fase 1 – MVP API + Wallpaper (1.5 week)
-  - Berichten-API, validatie, woordfilter; eenvoudige achtergrondweergave met live updates.
-- Fase 2 – Client/tray-invoer (1 week)
-  - Simpele invoerapp; foutmeldingen; throttling zichtbaar gemaakt aan gebruiker.
-- Fase 3 – Pilot & feedback (1 week)
-  - Beperkte uitrol; meten, verzamelen feedback; kleine UX/performance fixes.
-- Fase 4 – Oplevering (0.5 week)
-  - Documentatie (handleiding, privacy); stabilisatie; release.
+## Fasering en planning
 
-Mijlpalen
-- M1: MVP feed zichtbaar met echte data (einde fase 1)
-- M2: Berichten plaatsen via client met validaties (einde fase 2)
-- M3: Pilotresultaten verwerkt, release candidate (einde fase 3)
-- M4: Publieke release + documentatie (einde fase 4)
+**Doel:** op **vrijdag 19 september 2025 om 23:29** staat de demo online en is de documentatie klaar.
+
+### Overzicht per fase (in gewone taal)
+
+**Fase 1 — Basis neerzetten (9–10 sep)**  
+dingen opzetten: database, git repo, laravel project, tray app project allemaal opzetten. beginnen met laravel api die kan berichten ontvangen en teruggeven, scheldwoorden blokkeren, te snel posten afremmen en oude berichten automatisch opruimen.  
+**Resultaat:** werkende basis-API.
+
+**Fase 2 — Chatprogramma bouwen (11–12 sep)**  
+Tray-app maken. Je kunt hiermee een bericht typen en versturen, foutmeldingen zijn duidelijk, en het programma onthoudt jouw bijnaam/apparaat.  
+**Resultaat:** eerste versie van de tray-app (verzenden/ontvangen).
+
+**Fase 3 — Achtergrond instellen (13 sep)**  
+Achtergrond (Wallpaper Engine) die elke paar seconden nieuwe berichten ophaalt, maximaal 100 berichten laat zien en pauzeert als het scherm vergrendeld is.  
+**Resultaat:** werkende achtergrond die berichten toont.
+
+**Fase 4 — Alles koppelen en testen (14–15 sep)**  
+Testen van de hele systeem: bericht sturen → zien verschijnen. We testen ook foutgevallen en schrijven de eerste versie van de privacy-tekst.  
+**Resultaat:** end-to-end getest; concept privacy-tekst.
+
+**Fase 5 — Online zetten en bijschaven (16 sep)**  
+Ik zet alles online op de hosting, zorgen voor beveiligde verbinding (https), zetten de automatische taak aan (voor opruimen) en controleren of de “gezondheidspagina” werkt. We verwerken eerste feedback en maken de teksten netter.  
+**Resultaat:** live omgeving met kleine verbeteringen.
+
+**Fase 6 — Bufferdag (17 sep)**  
+Oplossen van eventuele foutjes op en maken kleine verbeteringen.  
+**Resultaat:** stabiele versie voor documenteren.
+
+**Fase 7 — Documentatie afronden (18 sep)**  
+Schrijven van een korte handleiding en de README.
+**Resultaat:** documentatie klaar voor oplevering.
+
+**Fase 8 — Oplevering (19 sep, vóór 23:29)**  
+Een korte demo en leveren alles op (code, handleiding, privacy-notitie).  
+**Resultaat:** project opgeleverd.
+
+### Mijlpalen en beslismomenten
+- **15 sep:** Go/No-Go om online te zetten.
+- **16 sep:** Go/No-Go voor publieke test.
+- **19 sep:** Eindoplevering en demo vóór **23:29**.
 
 ---
 
