@@ -8,6 +8,14 @@ return [
         'badword',
         'vloek',
         'scheldwoord',
+        'curse',
+        'swear',
+        'damn',
+        'hell',
+        'crap',
+        'darn',
+        'shoot',
+        'frick',
     ],
 
     // Optional external service configuration (not used by default logic)

@@ -124,4 +124,12 @@ Mijlpalen
 
 ---
 
-Einde document.
+## 6. Planning (tot vrijdag 19 september 2025, 23:29)
+- 9–10 sep: Backend MVP afronden.
+- 11–12 sep: Tray-app MVP.
+- 13 sep: Wallpaper.
+- 14-15 sep: Integratie en E2E tests.
+- 16 sep: Hosting/deploy.
+- 17 sep: bufferdag (bugfixes, kleine verbeteringen).
+- 18 sep: Documentatie.
+- 19 sep: Buffer & oplevering (demo, korte handleiding) vóór 23:29.

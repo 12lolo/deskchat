@@ -19,6 +19,9 @@ class MessageApiTest extends TestCase
 	private function postMsg(array $payload, ?string $deviceId = null)
 	{
 		$deviceId ??= $this->deviceId();
+		if (!array_key_exists('handle', $payload)) {
+			$payload['handle'] = 'Tester';
+		}
 		return $this->withHeaders(['X-Device-Id' => $deviceId])
 			->postJson('/api/messages', $payload);
 	}
@@ -40,12 +43,12 @@ class MessageApiTest extends TestCase
 	public function test_post_minimal_success_and_get_flow(): void
 	{
 		$did = $this->deviceId();
-		$this->postMsg(['content' => 'hoi'], $did)
+		$this->postMsg(['content' => 'hoi', 'handle' => 'Alice'], $did)
 			->assertStatus(201)
 			->assertJson(fn($j) => $j->where('ok', true)
 				->has('message', fn($m) => $m
 					->whereType('id', 'integer')
-					->where('handle', 'Anon')
+					->where('handle', 'Alice')
 					->where('content', 'hoi')
 					->has('ts')
 				));
@@ -99,8 +102,8 @@ class MessageApiTest extends TestCase
 	public function test_get_since_id_and_limits_and_ordering(): void
 	{
 		$did = $this->deviceId();
-		foreach (["a","b","c"] as $t) {
-			$this->postMsg(['content' => $t], $did)->assertStatus(201);
+		foreach (["a","b","c"] as $idx => $t) {
+			$this->postMsg(['content' => $t, 'handle' => 'User'.$idx], $did)->assertStatus(201);
 		}
 
 		$page1 = $this->getJson('/api/messages?limit=2')->assertStatus(200)->json();
@@ -136,11 +139,23 @@ class MessageApiTest extends TestCase
 		// Per device: 15/min — send 16th should be 429
 		$did = $this->deviceId();
 		for ($i = 0; $i < 15; $i++) {
-			$this->postMsg(['content' => 'm'.$i], $did)->assertStatus(201);
+			$this->postMsg(['content' => 'm'.$i, 'handle' => 'RL'], $did)->assertStatus(201);
 		}
 		$this->postMsg(['content' => 'overflow'], $did)
 			->assertStatus(429)
 			->assertJson(['ok' => false, 'error' => 'rate_limited']);
+	}
+
+	public function test_missing_handle_rejected(): void
+	{
+		$this->postMsg(['content' => 'hoi', 'handle' => null]) // helper will not override because key exists
+			->assertStatus(422)
+			->assertJson(['ok'=>false,'error'=>'validation_failed']);
+
+		// Without key at all -> helper injects value and succeeds
+		$res = $this->withHeaders(['X-Device-Id' => $this->deviceId()])
+			->postJson('/api/messages', ['content' => 'ok'])
+			->assertStatus(422); // because handle required and helper not involved
 	}
 }
 

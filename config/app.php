@@ -130,6 +130,7 @@ return [
 
     'maintenance' => [
         'driver' => env('APP_MAINTENANCE_DRIVER', 'file'),
-        'store' => env('APP_MAINTENANCE_STORE', 'database'),
+        // Use file maintenance driver only (no shared cache store required)
+        'store' => env('APP_MAINTENANCE_STORE', 'file'),
     ],
 ];

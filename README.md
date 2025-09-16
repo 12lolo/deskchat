@@ -246,6 +246,33 @@ To avoid MySQL connection limits on shared hosting, the API hot paths use files:
   - `seq.txt` — monotone numeric id counter
 - Cron: ensure `php artisan schedule:run` runs every minute. The `messages:flush-spool` task runs every 10 minutes and uses a cache lock.
 
+### Low DB Quota Deployment Notes
+
+If you previously followed instructions that enabled database-backed cache, session, or queue drivers, you may hit provider limits like `max_connections_per_hour` quickly because:
+
+- Database cache store: every rate-limit and cache call = 1 connection.
+- Database sessions: every request that starts / reads a session = 1 connection.
+- Database queue driver: workers poll the `jobs` table frequently.
+
+Current defaults in `config/` have been changed to safer file/sync options:
+
+```
+CACHE_STORE=file
+SESSION_DRIVER=file
+QUEUE_CONNECTION=sync
+APP_MAINTENANCE_DRIVER=file
+APP_MAINTENANCE_STORE=file
+```
+
+After updating `.env` (or pulling these config changes) run:
+
+```
+php artisan config:clear
+php artisan cache:clear
+```
+
+If a cached config file exists at `bootstrap/cache/config.php` from a previous deploy, remove it before re-caching, otherwise old drivers may persist.
+
 
 ---
 

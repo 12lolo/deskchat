@@ -22,11 +22,26 @@
             --embed-min-h: 140px;
             --embed-max-h: 50vh;
             --fade-h: 56px;
+            --gradient: radial-gradient(120% 120% at 100% 0%, var(--bg2), var(--bg1));
+        }
+
+        /* Light theme overrides */
+        :root[data-theme='light'] {
+            --bg1: #e2e8f0; /* slate-200 */
+            --bg2: #f1f5f9; /* slate-100 */
+            --card: rgba(0,0,0,0.06);
+            --text: #1e293b;
+            --muted: #475569;
+            --accent: #2563eb; /* blue-600 */
+            --accent2: #7c3aed; /* violet-600 */
+            --accent3: #059669; /* emerald-600 */
+            --card-border: rgba(0,0,0,0.15);
+            --shadow: rgba(0,0,0,0.25);
         }
 
         html, body {
             margin: 0; padding: 0; height: 100%; width: 100%;
-            background: radial-gradient(120% 120% at 100% 0%, var(--bg2), var(--bg1));
+            background: var(--gradient);
             color: var(--text);
             font-family: var(--font);
             -webkit-font-smoothing: antialiased;
@@ -86,34 +101,25 @@
         .settings-menu .row .val { min-width: 2.5em; text-align: right; color: var(--accent); font-size: 0.98em; }
 
         #feed {
-            display: flex; flex-direction: column; gap: calc(12px * var(--msg-scale, 1));
+            display: flex; flex-direction: column; gap: calc(8px * var(--msg-scale, 1));
             align-self: var(--h-align, center);
             align-items: var(--msg-align, center);
             overflow-y: auto; overflow-x: hidden; /* programmatic scroll only */
-            scroll-behavior: smooth; max-height: 60vh; min-height: 30vh; min-width: 340px; width: min(90vw, calc(80ch * var(--msg-scale, 1)));
-            /* hide scrollbars */
-            scrollbar-width: none; /* Firefox */
-            -ms-overflow-style: none; /* IE/Edge */
-            position: relative;
-            box-sizing: border-box;
-            padding: 0 12px calc(var(--fade-h) + 10px) 12px; /* leave space so last message rests above fade */
+            scroll-behavior: smooth; max-height: 82vh; min-height: 50vh; min-width: 340px; width: min(94vw, calc(85ch * var(--msg-scale, 1)));
+            scrollbar-width: none; -ms-overflow-style: none;
+            position: relative; box-sizing: border-box;
+            padding: 0 8px calc(var(--fade-h) + 6px) 8px;
         }
         #feed::-webkit-scrollbar { display: none; }
-        /* Bottom fade overlay */
-        #feed::after {
-            content: "";
-            position: absolute; left: 0; right: 0; bottom: 0; height: var(--fade-h);
-            pointer-events: none; /* visual only */
-            background: linear-gradient(to bottom, rgba(0,0,0,0) 0%, var(--bg1) 100%);
-        }
+ 
 
         .msg {
-            max-width: 100%; width: 100%; box-sizing: border-box; padding: calc(12px * var(--msg-scale, 1)) calc(16px * var(--msg-scale, 1)); border-radius: 14px;
+            max-width: 100%; width: 100%; box-sizing: border-box; padding: calc(8px * var(--msg-scale, 1)) calc(12px * var(--msg-scale, 1)); border-radius: 12px;
             position: relative;
             background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.06));
             backdrop-filter: blur(8px) saturate(120%);
             border: 1px solid var(--card-border);
-            box-shadow: 0 10px 24px -8px var(--shadow);
+            box-shadow: 0 6px 18px -6px var(--shadow);
             opacity: 0; transform: translateY(16px);
             transition: opacity 260ms ease, transform 320ms cubic-bezier(.2,.8,.2,1), box-shadow 300ms ease;
             font-size: calc(var(--font-size) * var(--msg-scale, 1));
@@ -146,8 +152,9 @@
         }
         .watermark { position: absolute; bottom: 2vh; left: 5vw; opacity: 0.3; color: var(--muted); font-size: 12px; }
 
-        /* Embeds */
-    .embed { margin-top: 8px; border-radius: 12px; overflow: hidden; box-shadow: 0 8px 22px -10px var(--shadow); width: 100%; }
+        /* Embeds (smaller) */
+    :root { --embed-min-h: 90px; --embed-max-h: 32vh; }
+    .embed { margin-top: 6px; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 14px -6px var(--shadow); width: 100%; }
     .embed.tenor { width: 100%; max-width: 100%; min-height: var(--embed-min-h); max-height: var(--embed-max-h); }
     .embed-media { display: block; width: 100%; height: auto; object-fit: contain; background: rgba(255,255,255,0.04); max-height: var(--embed-max-h); }
     .embed img.embed-media { min-height: var(--embed-min-h); }
@@ -225,8 +232,8 @@
             const shouldForceBottom = () => Date.now() < forceBottomUntil;
             const lockBottom = (ms = 1500) => { forceBottomUntil = Date.now() + ms; };
             // Embed helpers
-            const TENOR_RE = /https?:\/\/(?:www\.)?tenor\.com\/view\/[a-z0-9-]*-(\d+)/i;
-            const DIRECT_MEDIA_RE = /(https?:\/\/[^\s]+?\.(?:gif|mp4|webm))(?:\b|$)/i;
+            const TENOR_RE = /https?:\/\/(?:www\.)?tenor\.com\/view\/[a-z0-9-]*-(\d+)/ig;
+            const DIRECT_MEDIA_RE = /https?:\/\/[^\s]+?\.(?:gif|mp4|webm)(?:\?[^\s]*)?(?=\b|$)/ig;
 
             let tenorScriptLoaded = false;
             let tenorScriptLoading = false;
@@ -244,47 +251,52 @@
                 const nodes = [];
                 try {
                     const t = String(text ?? '');
-                    const tenorMatch = t.match(TENOR_RE);
-                    if (tenorMatch) {
-                        const id = tenorMatch[1];
-                        const c = document.createElement('div');
-                        c.className = 'embed tenor';
+                    TENOR_RE.lastIndex = 0; DIRECT_MEDIA_RE.lastIndex = 0;
+                    // 1. Tenor view links (limit 2)
+                    const tenorIds = [];
+                    let m;
+                    while ((m = TENOR_RE.exec(t)) && tenorIds.length < 2) {
+                        const raw = m[0];
+                        const idMatch = raw.match(/-(\d+)/);
+                        if (idMatch) tenorIds.push(idMatch[1]);
+                    }
+                    if (tenorIds.length) hadTenor = true;
+                    for (const id of tenorIds) {
+                        const outer = document.createElement('div');
+                        outer.className = 'embed tenor';
                         const div = document.createElement('div');
                         div.className = 'tenor-gif-embed';
                         div.setAttribute('data-postid', id);
                         div.setAttribute('data-share-method', 'host');
-                        div.setAttribute('data-aspect-ratio', '1.78');
+                        div.setAttribute('data-aspect-ratio', '1.4');
                         div.setAttribute('data-width', '100%');
-                        c.appendChild(div);
-                        nodes.push(c);
-                        hadTenor = true;
-                    } else {
-                        const mediaMatch = t.match(DIRECT_MEDIA_RE);
-                        if (mediaMatch) {
-                            const url = mediaMatch[1];
-                            const ext = url.split('.').pop().toLowerCase();
+                        outer.appendChild(div);
+                        nodes.push(outer);
+                    }
+                    // 2. Direct media (gif/mp4/webm) gather (limit 2, overall embeds <=3)
+                    if (nodes.length < 3) {
+                        let dm; let collected = 0;
+                        while ((dm = DIRECT_MEDIA_RE.exec(t)) && nodes.length < 3) {
+                            const url = dm[0];
+                            const ext = (url.split('?')[0].split('.').pop() || '').toLowerCase();
+                            const wrap = document.createElement('div');
+                            wrap.className = 'embed';
                             if (ext === 'gif') {
                                 const img = document.createElement('img');
-                                img.src = url;
-                                img.alt = 'GIF';
-                                img.className = 'embed-media';
-                                const wrap = document.createElement('div');
-                                wrap.className = 'embed';
+                                img.src = url; img.alt = 'GIF'; img.loading = 'lazy'; img.decoding='async'; img.className = 'embed-media';
+                                img.onerror = () => { img.alt = 'GIF failed'; img.style.opacity = '0.4'; };
                                 wrap.appendChild(img);
-                                nodes.push(wrap);
-                            } else { // mp4/webm
+                            } else {
                                 const video = document.createElement('video');
-                                video.src = url;
-                                video.autoplay = true; video.loop = true; video.muted = true; video.playsInline = true; video.controls = false;
-                                video.className = 'embed-media';
-                                const wrap = document.createElement('div');
-                                wrap.className = 'embed';
+                                video.src = url; video.autoplay = true; video.loop = true; video.muted = true; video.playsInline = true; video.controls = false; video.className='embed-media';
+                                video.onerror = () => { video.replaceWith(document.createTextNode('[video failed]')); };
                                 wrap.appendChild(video);
-                                nodes.push(wrap);
                             }
+                            nodes.push(wrap);
+                            collected++; if (collected >= 2) break;
                         }
                     }
-                } catch {}
+                } catch (e) { /* noop */ }
                 return nodes;
             }
 
@@ -293,15 +305,11 @@
                 try {
                     let out = String(text ?? '');
                     const TENOR_URL_RE = /https?:\/\/(?:www\.)?tenor\.com\/view\/[^\s]+/ig;
-                    const DIRECT_MEDIA_URL_RE = /https?:\/\/[^\s]+?\.(?:gif|mp4|webm)\b/ig;
-                    out = out.replace(TENOR_URL_RE, '');
-                    out = out.replace(DIRECT_MEDIA_URL_RE, '');
-                    // Collapse extra spaces left by removals
+                    const DIRECT_MEDIA_URL_RE = /https?:\/\/[^\s]+?\.(?:gif|mp4|webm)(?:\?[^\s]*)?\b/ig;
+                    out = out.replace(TENOR_URL_RE, ' ').replace(DIRECT_MEDIA_URL_RE, ' ');
                     out = out.replace(/\s{2,}/g, ' ').trim();
                     return out;
-                } catch {
-                    return String(text ?? '');
-                }
+                } catch { return String(text ?? ''); }
             }
 
             function log(...a) { if (debug) console.log('[deskchat]', ...a); }
@@ -606,11 +614,8 @@
             // Theme
             function applyTheme(val) {
                 document.documentElement.dataset.theme = val;
-                if (val === 'dark') {
-                    document.documentElement.style.background = 'radial-gradient(120% 120% at 100% 0%, #1e293b, #0f172a)';
-                } else {
-                    document.documentElement.style.background = 'radial-gradient(120% 120% at 100% 0%, #f1f5f9, #e2e8f0)';
-                }
+                // Regenerate gradient after variable overrides are applied
+                document.documentElement.style.setProperty('--gradient', `radial-gradient(120% 120% at 100% 0%, var(--bg2), var(--bg1))`);
             }
             // Poll interval
             function applyPollInterval(ms) {

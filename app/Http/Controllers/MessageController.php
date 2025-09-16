@@ -3,6 +3,7 @@ namespace App\Http\Controllers;
 
 use App\Support\FeedStore;
 use App\Support\IpPrivacy;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Validator;
@@ -27,15 +28,19 @@ class MessageController extends Controller
             return response()->json(['ok'=>false,'error'=>'missing_device_id'], 400);
         }
 
+        // Validation: handle now required (non-empty after trimming) per functional spec
         $v = Validator::make($r->all(), [
-            'handle'  => 'nullable|string|min:1|max:24',
+            'handle'  => 'required|string|min:1|max:24',
             'content' => 'required|string|min:1|max:280',
         ]);
         if ($v->fails()) {
             return response()->json(['ok'=>false,'error'=>'validation_failed','details'=>$v->errors()->toArray()], 422);
         }
 
-        $handle  = $r->input('handle');
+        $handle  = trim((string)$r->input('handle'));
+        if ($handle === '') {
+            return response()->json(['ok'=>false,'error'=>'validation_failed','details'=>['handle'=>['blank']]], 422);
+        }
         $content = (string)$r->input('content');
 
         // Sanitize: strip HTML, collapse whitespace, trim
@@ -47,30 +52,57 @@ class MessageController extends Controller
         if ($this->hasProfanity($content)) {
             return response()->json(['ok'=>false,'error'=>'profanity_blocked'], 422);
         }
-        // Build message for feed files
-        $msg = [
-            'id'      => $store->nextId(),
-            'handle'  => $handle ?: null,
-            'content' => $content,
-            'ts'      => now()->toIso8601String(),
-        ];
+        // Ensure storage path exists & writable before attempting writes
+        $messagesDir = storage_path('app/messages');
+        if (!is_dir($messagesDir)) {
+            @mkdir($messagesDir, 0775, true);
+        }
+        if (!is_dir($messagesDir) || !is_writable($messagesDir)) {
+            Log::error('messages storage directory not writable', [
+                'path' => $messagesDir,
+                'exists' => is_dir($messagesDir),
+                'writable' => is_writable($messagesDir),
+            ]);
+            return response()->json(['ok'=>false,'error'=>'storage_unavailable'], 500);
+        }
 
-        // Write feed + spool (include device/ip_hmac only in spool for DB flush)
-        $store->appendMessage($msg);
-        $clientIp = method_exists($r, 'getClientIp') ? $r->getClientIp() : $r->ip();
-        $spoolRow = $msg + [
-            'device_id' => Str::substr($device, 0, 64),
-            'ip_hmac'   => IpPrivacy::hmac($clientIp),
-        ];
-        $store->appendSpool($spoolRow);
+        try {
+            // Build message for feed files
+            $msg = [
+                'id'      => $store->nextId(),
+                'handle'  => $handle,
+                'content' => $content,
+                'ts'      => now()->toIso8601String(),
+            ];
 
-        // Update last_id cache for peek endpoint
-        try { Cache::put('messages:last_id', (int)$msg['id'], 86400); } catch (\Throwable $e) {}
+            // Write feed + spool (include device/ip_hmac only in spool for DB flush)
+            $store->appendMessage($msg);
+            $clientIp = method_exists($r, 'getClientIp') ? $r->getClientIp() : $r->ip();
+            $spoolRow = $msg + [
+                'device_id' => Str::substr($device, 0, 64),
+                'ip_hmac'   => IpPrivacy::hmac($clientIp),
+            ];
+            $store->appendSpool($spoolRow);
 
-        return response()->json([
-            'ok'      => true,
-            'message' => $msg,
-        ], 201);
+            // Update last_id cache for peek endpoint (non-critical)
+            try { Cache::put('messages:last_id', (int)$msg['id'], 86400); } catch (\Throwable $e) {}
+
+            return response()->json([
+                'ok'      => true,
+                'message' => $msg,
+            ], 201);
+        } catch (\Throwable $e) {
+            Log::error('message_store_failure', [
+                'ex' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace_hash' => substr(sha1($e->getTraceAsString()),0,12),
+            ]);
+            return response()->json([
+                'ok' => false,
+                'error' => 'storage_failure',
+            ], 500);
+        }
     }
 
     private function hasProfanity(string $text): bool {

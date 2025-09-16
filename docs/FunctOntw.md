@@ -29,17 +29,6 @@
 
 ---
 
-<!-- 
-Kijk dit document houd zich al een stuk beter aan de inhoudsopgave van het boek. 
-Kopjes zijn net anders genoemd, maar dat is niet erg.
-Ik mis nog wel een aantal zaken. Namelijk: 
-- Informatieverwerking onder gewenste situatie
-    - de use-cases ✅
-    - use-case tabellen ✅
-    - use-case diagram(men) ✅
--->
-
-
 
 ## 1. Voorwoord
 Dit document beschrijft **wat** deskchat live doet en waarom. Het systeem bestaat uit een bewegende achtergrond op de computer die live chatberichten toont, en een klein programma waarmee je zelf berichten kunt versturen. Het is bedoeld voor mensen die graag een sociale, interactieve achtergrond willen tijdens het werken.
@@ -75,18 +64,15 @@ deskchat live is een chatprogramma dat bestaat uit twee delen:
 
 ## 4. Gewenste situatie
 
-<!-- Laat een Use case diagram (alleen must haves) zien om een duidelijk overzicht te maken wat het systeem gaat doen. Leg vervolgens het plaatje in de tekst ook nog uit -->
-
 ### 4.1 Wat het systeem moet kunnen (MoSCoW)
+Zie 4.4 voor de use-cases tabellen.
 
 **Must have**
 - Achtergrond toont nieuwe berichten van andere gebruikers
-- Gebruikers kunnen berichten typen en versturen via een klein programma <!-- Klein programma is niet relevant om te noemen, daarmee maak je er namelijk een gecombineerde use-case van. het deel 'klein programma' is een niet-functionele requirement. -->
-- Berichten mogen niet te lang zijn (maximaal 280 tekens, zoals Twitter) <!-- Haakjes wegwerken en het direcht beschrijven, Twitter noemen is niet nodig -->
-- Gebruikers kunnen een bijnaam kiezen (geen echte naam vereist) <!-- Haakjes zijn niet nodig -->
-- Systeem blokkeert scheldwoorden en ongepaste taal <!-- Is dit echt een must have? het functioneert zonder dit ook. Het is niet wenselijk, maar functioneert wel -->
-- Bescherming tegen spam (niet te veel berichten per persoon) <!-- Idem, Echt een Must have? -->
-- Berichten worden automatisch verwijderd na een tijdje (maximaal 90 dagen) <!-- Idem, Echt een Must have? -->
+- Gebruikers kunnen berichten typen en versturen via een tray app/widget.
+- Berichten mogen niet te lang zijn, maximaal 280 tekens 
+- Gebruikers kunnen een bijnaam kiezen, geen echte naam vereist.
+- Systeem moderatie waaronder een filter voor scheldwoorden, rate limiting en logs
 
 **Could have** 
 - Berichten laden snel en de achtergrond gebruikt weinig computer-kracht
@@ -94,7 +80,7 @@ deskchat live is een chatprogramma dat bestaat uit twee delen:
 - Het programma stopt met werken als je computer vergrendeld is (bespaart internetverkeer)
 - Informatie over privacy op de website
 
-**Won't have, mby later**
+**Won't have, maby later**
 - **Meerdere chatruimtes**: bijvoorbeeld apart voor verschillende onderwerpen
 - **Plaatjes delen**: kleine animaties (GIFs) kunnen delen via links
 - Eenvoudige smileys in berichten
@@ -107,31 +93,34 @@ deskchat live is een chatprogramma dat bestaat uit twee delen:
 ---
 
 ### 4.2 Hoe gebruikers het systeem gebruiken
-<!-- Laat zien met een activity diagram -->
-**Een gewone gebruiker wil chatten:**
+```plantuml
+@startuml
+left to right direction
+actor "Gebruiker" as User
+actor "Systeem" as System
+
+usecase "Bijnaam kiezen" as UC1
+usecase "Bericht versturen" as UC2
+usecase "Berichten bekijken" as UC3
+usecase "Automatische retentie" as UC4
+
+User --> UC1
+User --> UC2
+User --> UC3
+System --> UC4
+UC2 ..> UC1 : <<include>>
+@enduml
+
+```
+**Een gebruiker die wil chatten doet het volgende:**
 1. Installeert Wallpaper Engine en zet de deskchat live achtergrond aan
-2. Downloadt het kleine chatprogramma en start het op
+2. Downloadt tray app en start het op
 3. Kiest een bijnaam (bijvoorbeeld "Alex" of "ChatLover")
 4. Typt een bericht en drukt op verzenden
 5. Ziet het bericht verschijnen op de achtergrond, samen met berichten van anderen
-6. Kan altijd nieuwe berichten typen via het icoon onderin het scherm
 
-<!-- De onderstaande dingen kunnen mooi in usecase tabellen dan weet je ook meteen bij welke usecase deze hoort -->
 
-**Wat er gebeurt als er problemen zijn:** 
-- Te lang bericht → gebruiker krijgt melding "Bericht te lang, maximaal 280 tekens"
-- Scheldwoord gebruikt → gebruiker krijgt melding "Bericht bevat ongepaste taal"
-- Te veel berichten gestuurd → gebruiker krijgt melding "Wacht even voordat je weer een bericht stuurt"
-- Geen internetverbinding → programma probeert het later opnieuw
-
-**Wat gebruikers zien op hun achtergrond:**
-- Nieuwe berichten verschijnen automatisch (iedere paar seconden wordt er gekeken)
-- Oude berichten verdwijnen van het scherm (alleen de laatste 100 berichten blijven zichtbaar)
-- Als de computer vergrendeld is, stopt de achtergrond met laden van nieuwe berichten
-
----
-
-### 4.3 Wat voor onderdelen er komen <!-- Soortvan Applicaties hoofdstuk -->
+### 4.3 Soortvan Applicaties
 
 **De bewegende achtergrond:**
 - Toont alleen berichten (je kunt er niet in typen)
@@ -261,21 +250,13 @@ UC2 ..> UC1 : <<include>>
 ---
 
 ## 6. Planning (tot vrijdag 19 september 2025, 23:29)
-- 9–10 sep: Backend MVP afronden (berichten GET/POST, validatie, woordfilter, throttling, retentie). <!-- Dit is al klaar dus? -->
-- 11–12 sep: Tray-app MVP (verzenden/ontvangen, foutmeldingen, device-id, tray-icoon). <!-- Hiermee ben je al begonnen? -->
-- 13 sep: Wallpaper (polling, DOM-cap 100, pauze bij vergrendeling/hidden). <!-- Que? -->
+- 9–10 sep: Backend MVP afronden (berichten GET/POST, validatie, woordfilter, throttling, retentie). 
+- 11–12 sep: Tray-app MVP (verzenden/ontvangen, foutmeldingen, device-id, tray-icoon).
+- 13 sep: Wallpaper (polling, DOM-cap 100, pauze bij vergrendeling/hidden).
 - 14-15 sep: Integratie en E2E tests (happy path + fouten, privacytekst 1e versie). 
 - 16 sep: Hosting/deploy, CORS check, scheduler, healthcheck, Feedbackronde, finetuning UX/teksten.
 - 17 sep: bufferdag (bugfixes, kleine verbeteringen).
 - 18 sep: Documentatie (korte handleiding, readme, privacy-notitie).
 - 19 sep: Buffer & oplevering (demo, korte handleiding, definitieve privacy-notitie) vóór 23:29.
 
----
 
-## 7. Acceptatiecriteria <!-- Dit zijn een soort testcases, gebruik die in je testrapport -->
-- Wallpaper toont nieuwe berichten binnen ~10 seconden; maximaal ~30 zichtbaar.
-- Tray-app kan bericht (1–280 tekens) met bijnaam versturen; duidelijke foutmelding bij: te lang, woordfilter, rate limit, ontbrekende device-id.
-- API responses conform: 201 bij succes; 400 missing_device_id; 422 validation_failed/profanity_blocked; 429 rate_limited met retry_after.
-- Geen accounts; geen persoonsgegevens opgeslagen; alleen anonieme device-id en ip_hmac (hash van IP) voor misbruikpreventie.
-- Berichten ouder dan max 90 dagen worden automatisch verwijderd.
-- Privacy-notitie in gewone taal is beschikbaar op de site.
