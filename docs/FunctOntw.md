@@ -8,40 +8,39 @@
 **Website:** https://deskchat.live
 
 ---
+## 1. Voorwoord
+Dit document beschrijft **wat** deskchat live doet en waarom. Het systeem bestaat uit een bewegende achtergrond op de computer die live chatberichten toont, en een programma waarmee je zelf berichten kunt versturen. Het is bedoeld voor mensen die graag een sociale, interactieve achtergrond willen tijdens het werken.
+
+---
 
 ## Inhoudsopgave
 1. Voorwoord
 2. Samenvatting
-3. Huidige situatie (Hoe communiceren systemen)  
-   3.1 Wat er nu is  
-   3.2 Wat er ontbreekt
-4. Gewenste situatie (Hoe moeten systemen communiceren)  
-   4.1 Wat het systeem moet kunnen (MoSCoW)  
-   4.2 Hoe gebruikers het systeem gebruiken  
-   4.3 Wat voor onderdelen er komen
-   4.4 Use-cases
-   4.5 Use-case diagram
-5. Gevolgen en impact  
-   5.1 Voor gebruikers  
-   5.2 Voor beheer  
-   5.3 Kosten  
-   5.4 Planning (tot vrijdag 19 september 2025, 23:29)
-6. Acceptatiecriteria
+3. Huidige situatie  
+3.1 informatie verwerking  
+3.2 applicaties  
+3.3 infrastructure
+4. Gewenste situatie  
+    4.1 Requirements (MoSCoW)  
+    4.2 Informatie verwerking  
+    4.3 Applicaties  
+    4.4 Use-cases
+5. Consequenties  
+5.1 Organisatorische consequenties
+5.2 technische consequenties 
+6. Kosten  
+7. Planning
 
 ---
 
 
-## 1. Voorwoord
-Dit document beschrijft **wat** deskchat live doet en waarom. Het systeem bestaat uit een bewegende achtergrond op de computer die live chatberichten toont, en een klein programma waarmee je zelf berichten kunt versturen. Het is bedoeld voor mensen die graag een sociale, interactieve achtergrond willen tijdens het werken.
-
----
 
 ## 2. Samenvatting
 deskchat live is een chatprogramma dat bestaat uit twee delen:
 
 **De achtergrond**: Een bewegende achtergrond voor je computer (gemaakt met Wallpaper Engine) waar je live berichten van andere gebruikers ziet verschijnen. Je kunt hier alleen kijken, niet typen.
 
-**Het chatprogramma**: Een klein programma dat onzichtbaar op de achtergrond draait. Via een icoon onderin je scherm kun je chatberichten typen en versturen.
+**Het chatprogramma**: Een programma dat onzichtbaar op de achtergrond draait. Via een icoon onderin je scherm kun je chatberichten typen en versturen.
 
 **Gebruiksgemak**: Geen ingewikkelde accounts aanmaken - je kiest gewoon een bijnaam en kunt meteen chatten. Berichten zijn openbaar en iedereen kan meepraten in één grote chatruimte.
 
@@ -52,9 +51,9 @@ deskchat live is een chatprogramma dat bestaat uit twee delen:
 ## 3. Huidige situatie
 ### 3.1 informatieverwerking
 Er is geen bestaand systeem met dezelfde opzet; vergelijkbare alternatieven vereisen browser of accounts.   
-### 3.2 Aplicaties
+### 3.2 Applicaties
 Geen bestaande applicaties specifiek voor deze behoefte binnen het project. Wel word er gebruik gemaakt van de Wallpaper Engine, dat bestaat al.     
-### 3.3 Infrastucture
+### 3.3 Infrastructure
 Bestaande Hostinger webhosting (PHP/MySQL) is beschikbaar.  
 
 ---
@@ -79,8 +78,6 @@ Zie 4.4 voor de use-cases tabellen.
 
 **Won't have, maby later**
 - **Meerdere chatruimtes**: bijvoorbeeld apart voor verschillende onderwerpen
-- **Plaatjes delen**: kleine animaties (GIFs) kunnen delen via links
-- Eenvoudige smileys in berichten
 - Bestanden uploaden
 - Berichten die alleen jij kunt lezen
 - Moderatoren die berichten kunnen verwijderen
@@ -120,20 +117,20 @@ UC2 ..> UC1 : <<include>>
 
 ### 4.3 Applicaties
 
-**De bewegende achtergrond:**
+**De live achtergrond:**
 - Toont alleen berichten (je kunt er niet in typen)
 - Ververst automatisch elke paar seconden
-- Toont maximaal 100 berichten tegelijk
-- Werkt alleen als je computer niet vergrendeld is
+- Toont maximaal 30 berichten tegelijk
+- Werkt alleen als je computer niet vergrendeld is en op voorgrond staat
 
 **Het chatprogramma:**
-- Klein programma dat onzichtbaar op de achtergrond draait
+- tray app dat onzichtbaar op de achtergrond draait
 - Icoon onderin je scherm (bij de klok)
-- Simpel venster om berichten te typen
+- Simpel venster/widget om berichten te typen
 - Toont foutmeldingen als er iets mis gaat
 - Onthoud je bijnaam zodat je die niet steeds opnieuw hoeft in te voeren
 
-**Het systeem achter de schermen:**
+**API / Het systeem achter de schermen:**
 - Ontvangt berichten van gebruikers
 - Controleert of berichten niet te lang zijn
 - Blokkeert scheldwoorden
@@ -199,8 +196,6 @@ Onderstaande use-cases beschrijven de primaire (must have) interacties.
 | Niet-functionele eisen | Run duurt < 1 minuut bij verwacht volume; geen waarneembare impact op posting latency. |
 | Postconditie | Alleen recente berichten blijven beschikbaar (privacy & performance). |
 
-Referentie naar Acceptatiecriteria: UC2 & UC3 dekken real-time gedrag; UC2 uitzonderingen koppelen direct aan foutcodes; UC4 aan retentie; UC1 aan voorwaarde voor posten.
-
 
 ---
 
@@ -222,19 +217,17 @@ Referentie naar Acceptatiecriteria: UC2 & UC3 dekken real-time gedrag; UC2 uitzo
 
 ## 6. Kosten
 - **Gebruikers:** Wallpaper Engine (eenmalig ~€4), verder gratis
-- **Ontwikkeling:** Geen extra kosten (gebruikt bestaande hosting)
-- **Onderhoud:** Minimale tijd voor monitoring en updates en hostingkosten voor api en welcome page (~€ 4 per maand)
+- **Ontwikkeling:** Geen extra kosten.
+- **Onderhoud:** Minimale tijd voor monitoring en updates en hostingkosten voor api en welcome page (~ € 10 per maand) tenzij eigen server bestaat of het word te zwaar voor huidige hosting. 
 
 ---
 
 ## 7. Planning (tot vrijdag 19 september 2025, 23:29)
-- 9–10 sep: Backend MVP afronden (berichten GET/POST, validatie, woordfilter, throttling, retentie). 
-- 11–12 sep: Tray-app MVP (verzenden/ontvangen, foutmeldingen, device-id, tray-icoon).
-- 13 sep: Wallpaper (polling, DOM-cap 100, pauze bij vergrendeling/hidden).
-- 14-15 sep: Integratie en E2E tests (happy path + fouten, privacytekst 1e versie). 
-- 16 sep: Hosting/deploy, CORS check, scheduler, healthcheck, Feedbackronde, finetuning UX/teksten.
-- 17 sep: bufferdag (bugfixes, kleine verbeteringen).
-- 18 sep: Documentatie (korte handleiding, readme, privacy-notitie).
-- 19 sep: Buffer & oplevering (demo, korte handleiding, definitieve privacy-notitie) vóór 23:29.
-
-
+- 9–10 sep: Basis van de server / API (eerste werkende versie) afronden: berichten ontvangen en terugsturen, invoer controleren, scheldwoorden blokkeren, te snel posten afremmen en oude berichten automatisch verwijderen.
+- 11–12 sep: Tray-app (eerste werkende versie) bouwen: berichten sturen/zien, duidelijke foutmeldingen, apparaat-ID opslaan en icoon in de taakbalk.
+- 13 sep: Achtergrond instellen: elke paar seconden nieuwe berichten ophalen, maximaal 100 tegelijk tonen en pauzeren wanneer het scherm vergrendeld of verborgen is.
+- 14–15 sep: Alles koppelen en volledig testen (zowel goede als fout-scenario’s). Eerste versie van de privacytekst schrijven.
+- 16 sep: Online zetten op de hosting, toegangsinstellingen voor de website controleren, automatische taak aanzetten, controlepagina testen, feedback verwerken en teksten/gebruikservaring bijschaven.
+- 17 sep: Bufferdag: foutjes oplossen en kleine verbeteringen.
+- 18 sep: Documentatie afronden: korte handleiding, README en privacy-notitie.
+- 19 sep: Laatste buffer en oplevering: demo geven en definitieve handleiding en privacy-notitie opleveren vóór 23:29.
