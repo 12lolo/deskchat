@@ -1,114 +1,289 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>DeskChat — Live Wallpaper & API</title>
-    <meta name="description" content="DeskChat is a lightweight, real‑time global chat feed you can pin as desktop wallpaper. Privacy‑friendly, file‑backed, and fast." />
-    <link rel="icon" href="/favicon.ico" />
-    <style>
-      :root {
-        --bg: #ffffff;
-        --fg: #1c1c1a;
-        --muted: #706f6c;
-        --panel: #fdfdfc;
-        --border: #e3e3e0;
-        --brand: #f53003;
-        --brand-contrast: #ff4433;
-        --btn-bg: #1b1b18;
-        --btn-fg: #ffffff;
-        --code-bg: #1b1b18;
-        --code-fg: #ffffff;
-      }
-      @media (prefers-color-scheme: dark) {
-        :root {
-          --bg: #0a0a0a;
-          --fg: #ededec;
-          --muted: #a1a09a;
-          --panel: #161615;
-          --border: #3e3e3a;
-          --brand: #ff4433;
-          --btn-bg: #eeeeec;
-          --btn-fg: #1c1c1a;
-          --code-bg: #0a0a0a;
-          --code-fg: #ededec;
-        }
-      }
-      * { box-sizing: border-box; }
-      html, body { height: 100%; }
-      body {
-        margin: 0;
-        font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
-        background: var(--bg);
-        color: var(--fg);
-        -webkit-font-smoothing: antialiased;
-        -moz-osx-font-smoothing: grayscale;
-      }
-      .wrap { display: grid; place-items: center; min-height: 100%; padding: 24px; }
-      .container { width: 100%; max-width: 1024px; display: grid; grid-template-columns: 1fr; gap: 16px; }
-      @media (min-width: 1024px) { .container { grid-template-columns: 1.1fr 0.9fr; } }
-      .panel {
-        padding: 24px; border: 1px solid var(--border); border-radius: 8px; background: var(--panel);
-        box-shadow: inset 0 0 0 1px rgba(26,26,0,0.04);
-      }
-      h1 { margin: 0 0 8px; font-size: 28px; line-height: 1.2; font-weight: 650; letter-spacing: -0.02em; }
-      h2 { margin: 24px 0 8px; font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; font-weight: 600; color: var(--brand); }
-      p { margin: 0 0 12px; color: var(--muted); line-height: 1.55; font-size: 14px; }
-      a { color: var(--brand); text-decoration: underline; text-underline-offset: 3px; }
-      .btn { display: inline-block; padding: 8px 16px; border-radius: 6px; border: 1px solid #000; background: var(--btn-bg); color: var(--btn-fg); text-decoration: none; font-weight: 600; }
-      .btn.secondary { background: transparent; color: var(--fg); border-color: color-mix(in srgb, var(--fg) 20%, transparent); }
-      .grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
-      @media (min-width: 480px) { .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-      pre { margin: 0; padding: 12px; background: var(--code-bg); color: var(--code-fg); border-radius: 6px; overflow: auto; font-size: 12px; line-height: 1.5; }
-      footer { margin-top: 24px; font-size: 12px; color: var(--muted); }
-      /* Right column simple illustration */
-      .art { display: none; }
-      @media (min-width: 1024px) { .art { display: block; } }
-      .artcard { border: 1px dashed var(--border); border-radius: 8px; padding: 16px; height: 100%; display: grid; place-items: center; color: var(--muted); }
-    </style>
-  </head>
-  <body>
-    <div class="wrap">
-      <main class="container">
-        <section class="panel">
-          <h1>DeskChat</h1>
-          <p>A lightweight, real‑time global chat feed you can pin right onto your desktop as live wallpaper. Privacy‑friendly, file‑backed, and fast. No account required—just pick a handle and talk.</p>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DeskChat — Live Chat Wallpaper & Tray App</title>
+  <meta name="description" content="DeskChat is a lightweight, privacy-friendly live chat you can pin as a desktop wallpaper. Post from a tiny Windows tray app — no account required." />
+  <link rel="icon" href="/favicon.ico" />
 
-          <h2>Install the Live Wallpaper</h2>
-          <p>
-            Add the DeskChat live feed to your desktop via Steam Workshop (Wallpaper Engine):
-            <br />
-            <a href="https://steamcommunity.com/sharedfiles/filedetails/?id=3569202732" target="_blank" rel="noopener">Steam Workshop Item #3569202732</a>
-          </p>
+  <!-- Open Graph / Twitter -->
+  <meta property="og:title" content="DeskChat — Live Chat Wallpaper & Tray App" />
+  <meta property="og:description" content="Pin a live, global chat to your wallpaper. Post from a tiny Windows tray app. No account needed." />
+  <meta property="og:image" content="https://deskchat.live/images/logoBlue.webp" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://deskchat.live/" />
+  <meta name="twitter:card" content="summary_large_image" />
 
-          <h2>Tray App / Installer</h2>
-          <div class="panel" style="padding: 12px;">
-            <p style="margin-bottom: 6px; color: var(--fg); font-weight: 600;">Windows</p>
-            <p>Download the latest stable tray companion for Windows:</p>
-            <div style="margin-top: 8px;">
-              <a class="btn" href="/downloads/TrayApp/deskchat-tray-stable-Setup.exe" download>Install DeskChat for Windows</a>
+  <!-- Schema.org -->
+  <script type="application/ld+json">
+  {
+    "@context":"https://schema.org",
+    "@type":"SoftwareApplication",
+    "name":"DeskChat",
+    "applicationCategory":"DesktopApplication",
+    "operatingSystem":"Windows",
+    "description":"Live chat wallpaper powered by a tiny Windows tray app. Privacy-friendly, fast, and lightweight.",
+    "url":"https://deskchat.live",
+    "softwareVersion":"1.0",
+    "offers":{"@type":"Offer","price":"0","priceCurrency":"EUR"}
+  }
+  </script>
+
+  <style>
+    :root{
+      --bg:#0b1020;
+      --bg-accent: radial-gradient(1200px 600px at 80% -100px, rgba(74,163,255,.25), transparent 60%),
+                   radial-gradient(900px 600px at -30% 120%, rgba(74,163,255,.16), transparent 60%);
+      --panel:#10162a;
+      --panel-2:#0f1426;
+      --fg:#e9edf7;
+      --muted:#9aa3b2;
+      --border:#1e2a44;
+      --brand:#4aa3ff;
+      --brand-2:#7bc4ff;
+      --ok:#22c55e;
+      --btn-bg:#4aa3ff;
+      --btn-fg:#001228;
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --radius:16px;
+    }
+    @media (prefers-color-scheme: light){
+      :root{
+        --bg:#f7fafc;
+        --bg-accent: radial-gradient(1200px 600px at 90% -100px, rgba(74,163,255,.14), transparent 60%),
+                     radial-gradient(900px 600px at -20% 120%, rgba(74,163,255,.10), transparent 60%);
+        --panel:#ffffff;
+        --panel-2:#f9fbff;
+        --fg:#0e1726;
+        --muted:#5b677a;
+        --border:#e5edf7;
+        --brand:#2563eb;
+        --brand-2:#60a5fa;
+        --btn-bg:#0f172a;
+        --btn-fg:#ffffff;
+        --shadow: 0 8px 24px rgba(2,6,23,.08);
+      }
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      background: var(--bg);
+      color: var(--fg);
+      -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+      background-image: var(--bg-accent);
+      background-attachment: fixed;
+    }
+    a{color:var(--brand); text-decoration:none}
+    a:hover{ text-decoration:underline; text-underline-offset:3px}
+    .wrap{max-width:1120px; margin:0 auto; padding:24px}
+    header{
+      display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:18px;
+    }
+    .brand{display:flex; align-items:center; gap:12px}
+    .brand img{width:40px; height:40px}
+    .brand h1{font-size:20px; margin:0; letter-spacing:.2px}
+    .cta{
+      display:flex; gap:10px; flex-wrap:wrap;
+    }
+    .btn{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:10px 14px; border-radius:12px;
+      border:1px solid rgba(255,255,255,.12);
+      background:var(--btn-bg); color:var(--btn-fg); font-weight:700;
+      box-shadow: var(--shadow);
+    }
+    .btn.secondary{
+      background:transparent; color:var(--fg);
+      border-color: color-mix(in srgb, var(--fg) 20%, transparent);
+      font-weight:600;
+    }
+    .hero{
+      display:grid; grid-template-columns: 1fr; gap:18px;
+    }
+    @media (min-width: 980px){
+      .hero{ grid-template-columns: 1.2fr .8fr; align-items:stretch; }
+    }
+    .panel{
+      background:var(--panel);
+      border:1px solid var(--border);
+      border-radius: var(--radius);
+      padding:22px;
+      box-shadow: var(--shadow);
+    }
+    .panel-ghost{
+      background: linear-gradient(180deg, color-mix(in srgb, var(--panel) 90%, transparent), color-mix(in srgb, var(--panel-2) 70%, transparent));
+      border:1px dashed color-mix(in srgb, var(--border) 70%, transparent);
+      border-radius: var(--radius);
+      padding:22px;
+      display:grid; place-items:center;
+      color:var(--muted);
+      text-align:center;
+    }
+    h2.label{
+      margin:0 0 10px; font-size:12px; letter-spacing:.18em; text-transform:uppercase; color:var(--brand-2);
+    }
+    .lead{
+      margin:0 0 14px; line-height:1.55; color:var(--muted)
+    }
+    .grid{ display:grid; gap:12px }
+    @media (min-width:640px){ .grid.two{ grid-template-columns: repeat(2, minmax(0,1fr)) } }
+    .kbd{ padding:.1rem .4rem; border-radius:6px; background:color-mix(in srgb, var(--fg) 12%, transparent); border:1px solid color-mix(in srgb, var(--fg) 20%, transparent); font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; font-size:12px }
+    .list{ margin:8px 0 0; padding:0 0 0 16px; color:var(--muted) }
+    .pill{
+      display:inline-block; padding:6px 10px; border-radius:999px;
+      background: color-mix(in srgb, var(--brand) 20%, transparent);
+      border:1px solid color-mix(in srgb, var(--brand) 40%, transparent);
+      color: var(--brand-2); font-size:12px; font-weight:700; letter-spacing:.2px;
+    }
+    .subtle{ color:var(--muted) }
+    .split{ display:grid; gap:12px }
+    @media (min-width:860px){ .split{ grid-template-columns: 1fr 1fr }}
+    details{
+      background: var(--panel);
+      border:1px solid var(--border);
+      border-radius:12px; padding:12px 14px;
+    }
+    details summary{ cursor:pointer; font-weight:600; outline:none }
+    details p{ margin:8px 0 0 }
+    footer{
+      margin-top:22px; padding-top:14px; border-top:1px dashed var(--border);
+      display:flex; flex-wrap:wrap; gap:8px; justify-content:space-between; color:var(--muted); font-size:12px;
+    }
+    .btn-row{ display:flex; gap:10px; flex-wrap:wrap; margin-top:10px }
+    .code{
+      background: #0a0f1f; color:#e9edf7; border-radius:10px; padding:12px; overflow:auto; font-size:12px; border:1px solid #1b2847;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="brand" aria-label="DeskChat">
+        <img src="https://deskchat.live/images/logoBlue.webp" width="40" height="40" alt="DeskChat logo">
+        <h1>DeskChat</h1>
+        <span class="pill" style="margin-left:6px">Live Chat Wallpaper</span>
+      </div>
+      <nav class="cta" aria-label="Primary">
+        <a class="btn" href="/downloads/TrayApp/deskchat-tray-stable-Setup.exe" download>Install for Windows</a>
+        <a class="btn secondary" href="https://api.deskchat.live/api/health" target="_blank" rel="noopener">API Health</a>
+      </nav>
+    </header>
+
+    <main class="hero" role="main">
+      <!-- Left: content -->
+      <section class="panel" aria-labelledby="intro-title">
+        <h2 class="label">Why DeskChat</h2>
+        <h3 id="intro-title" style="margin:0 0 6px; font-size:28px; letter-spacing:-.02em">Live, ambient chat — right on your desktop</h3>
+        <p class="lead">Pin a real-time global chat to your wallpaper. Post from a tiny tray app — no account required, pick a handle and talk. Privacy-friendly, file-backed, fast.</p>
+
+        <div class="grid two">
+          <div class="panel" style="padding:14px">
+            <strong>Wallpaper Engine</strong>
+            <p class="subtle">Subscribe to the Steam Workshop item and see messages flow in.</p>
+            <div class="btn-row">
+              <a class="btn" href="https://steamcommunity.com/sharedfiles/filedetails/?id=3570243529" target="_blank" rel="noopener" aria-label="Open Steam Workshop item">Open on Steam</a>
+              <a class="btn secondary" href="/wallpaper/index.html">Open Live Feed</a>
             </div>
           </div>
-          
-          <h2>Open the Live Feed</h2>
-          <div class="grid">
-            <a class="btn" href="/wallpaper/index.html">Open Live Feed</a>
-            <a class="btn secondary" href="https://api.deskchat.live/api/health" target="_blank" rel="noopener">API Health</a>
+          <div class="panel" style="padding:14px">
+            <strong>Tray App</strong>
+            <p class="subtle">Post messages from Windows. No login — just a nickname.</p>
+            <div class="btn-row">
+              <a class="btn" href="/downloads/TrayApp/deskchat-tray-stable-Setup.exe" download>Install for Windows</a>
+              <a class="btn secondary" href="#how-it-works">How it works</a>
+            </div>
           </div>
+        </div>
 
-          <footer>
-            © <span id="year"></span> DeskChat. All rights reserved.
-          </footer>
-        </section>
+        <div class="split" id="how-it-works" style="margin-top:12px">
+          <div class="panel">
+            <strong>How it works</strong>
+            <ul class="list">
+              <li>Wallpaper fetches new messages every ~2.5s and shows ~30 recent ones.</li>
+              <li>Tray app sends posts to the API with a device ID (no account needed).</li>
+              <li>Server filters profanity, rate-limits abuse, and keeps the feed fast.</li>
+            </ul>
+          </div>
+          <div class="panel">
+            <strong>Privacy</strong>
+            <ul class="list">
+              <li>No raw IPs stored by the app — only a hashed identifier server-side.</li>
+              <li>Messages auto-purge on a rolling schedule.</li>
+              <li>Anonymous by default: you choose an optional nickname.</li>
+            </ul>
+          </div>
+        </div>
 
-        <aside class="art">
-          <div class="artcard">DeskChat — simple, fast and fun.</div>
-        </aside>
-      </main>
-    </div>
+        <div class="panel" style="margin-top:12px">
+          <strong>Quick API peek</strong>
+          <pre class="code" aria-label="API example">
+GET  https://api.deskchat.live/api/messages?since_id=0&amp;limit=10
+POST https://api.deskchat.live/api/messages  (header: X-Device-Id &amp; JSON body)</pre>
+        </div>
 
-    <script>
-      document.getElementById('year').textContent = new Date().getFullYear();
-    </script>
-  </body>
-  </html>
+        <div class="btn-row" style="margin-top:14px">
+          <a class="btn" href="/downloads/TrayApp/deskchat-tray-stable-Setup.exe" download>Download Tray App</a>
+          <a class="btn secondary" href="https://steamcommunity.com/sharedfiles/filedetails/?id=3570243529" target="_blank" rel="noopener">Steam Workshop</a>
+          <a class="btn secondary" href="/wallpaper/index.html">Live Feed (web)</a>
+        </div>
+      </section>
+
+      <!-- Right: simple visual -->
+      <aside class="panel-ghost" aria-hidden="true">
+        <div>
+          <img src="https://deskchat.live/images/logoBlue.webp" alt="" width="96" height="96" style="opacity:.9; filter: drop-shadow(0 6px 16px rgba(74,163,255,.35)); margin-bottom:10px" />
+          <div style="font-size:14px">Lightweight • Fast • Privacy-friendly</div>
+        </div>
+      </aside>
+    </main>
+
+    <section class="split" style="margin-top:16px">
+      <div class="panel">
+        <h2 class="label">FAQ</h2>
+
+        <details>
+          <summary>Do I need an account?</summary>
+          <p>No — just set a nickname in the tray app and post.</p>
+        </details>
+        <details>
+          <summary>Is it moderated?</summary>
+          <p>Yes: server-side profanity filter and rate limiting. Abusive posts are blocked and posting too fast will temporarily rate-limit you.</p>
+        </details>
+        <details>
+          <summary>Why can’t I see my post?</summary>
+          <p>Ensure the tray app is running and you’re online. If you posted very quickly, you may be rate-limited for a short time.</p>
+        </details>
+        <details>
+          <summary>GIFs & emojis?</summary>
+          <p>Emojis work (Win + .). Tenor GIF links can be pasted; the wallpaper will render lightweight embeds.</p>
+        </details>
+      </div>
+
+      <div class="panel">
+        <h2 class="label">Changelog & Status</h2>
+        <p class="subtle">MVP live. Multiple rooms and richer media are “could-have” items planned for future updates.</p>
+        <p style="margin-top:8px">
+          <strong>Health:</strong>
+          <a href="https://api.deskchat.live/api/health" target="_blank" rel="noopener" aria-label="API health">API</a>
+          <span style="color:var(--ok); margin-left:6px">●</span>
+        </p>
+      </div>
+    </section>
+
+    <footer>
+      <div>© <span id="year"></span> DeskChat. All rights reserved.</div>
+      <div>
+        <a href="/privacy.html">Privacy</a> ·
+        <a href="/docs/README.html">Docs</a>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>

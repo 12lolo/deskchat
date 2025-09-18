@@ -223,9 +223,9 @@
         // Config via URL params (e.g., ?api=https://api.deskchat.live&interval=2500&limit=30&max=100)
         const params = new URLSearchParams(location.search);
         const API_BASE = (params.get('api') || 'https://api.deskchat.live').replace(/\/$/, '');
-        let POLL_MS = Math.max(800, Number(params.get('interval') || 2500));
-        const PAGE_LIMIT = Math.min(100, Math.max(1, Number(params.get('limit') || 30)));
-        const MAX_DOM = Math.min(300, Math.max(10, Number(params.get('max') || 100)));
+    let POLL_MS = Math.max(800, Number(params.get('interval') || 2500));
+    const PAGE_LIMIT = Math.min(100, Math.max(1, Number(params.get('limit') || 20)));
+    const MAX_DOM = Math.min(300, Math.max(10, Number(params.get('max') || 20)));
         const SCROLL_MS = Math.max(300, Math.min(1500, Number(params.get('scroll_ms') || 700)));
 
         // DOM elements
@@ -265,7 +265,24 @@
         let forceBottomUntil = 0;
         const shouldForceBottom = () => Date.now() < forceBottomUntil;
         const lockBottom = (ms = 1500) => { forceBottomUntil = Date.now() + ms; };
-    const nearBottom = () => (feed.scrollHeight - feed.scrollTop - feed.clientHeight) <= 8;
+        const nearBottom = () => (feed.scrollHeight - feed.scrollTop - feed.clientHeight) <= 8;
+        // Intersection observer to pause off-screen videos
+        let __ioMedia = null;
+        function mediaObserver() {
+            if (__ioMedia) return __ioMedia;
+            try {
+                __ioMedia = new IntersectionObserver((entries) => {
+                    for (const entry of entries) {
+                        const el = entry.target;
+                        if (el && el.tagName === 'VIDEO') {
+                            if (entry.isIntersecting) { try { el.play().catch(()=>{}); } catch {} }
+                            else { try { el.pause(); } catch {} }
+                        }
+                    }
+                }, { root: feed, threshold: 0.05 });
+            } catch {}
+            return __ioMedia;
+        }
         // Embed helpers
     // Match common Tenor URL forms: /view/slug-12345 or /slug-12345
     const TENOR_RE = /https?:\/\/(?:www\.)?tenor\.com\/(?:view\/)?[\w-]*-(\d+)/ig;
@@ -522,6 +539,7 @@
                     } else if (media.tagName === 'VIDEO') {
                         media.addEventListener('loadedmetadata', handler, { once: true });
                         media.addEventListener('loadeddata', handler, { once: true });
+                        try { mediaObserver().observe(media); } catch {}
                     }
                 }
                 // Observe size changes on new items/embeds (e.g., Tenor iframe settling)
@@ -542,7 +560,7 @@
             while (feed.children.length > MAX_DOM) {
                 feed.removeChild(feed.firstChild);
             }
-            // Trim further to minimum needed to fill viewport + small buffer for lightweight mode
+            // Optional viewport-based trim, but never below MAX_DOM (cap at 20 by default)
             try {
                 const children = Array.from(feed.children);
                 let h = 0, keep = 0;
@@ -550,9 +568,10 @@
                     const el = children[i];
                     h += el.getBoundingClientRect().height;
                     keep++;
-                    if (h >= feed.clientHeight * 1.2) break; // keep just over a screenful
+                    if (h >= feed.clientHeight * 1.2) break;
                 }
-                const target = Math.max(keep + 3, 8); // tiny buffer, minimum 8
+                const viewportTarget = Math.max(keep + 3, 8);
+                const target = Math.max(viewportTarget, MAX_DOM);
                 while (feed.children.length > target) feed.removeChild(feed.firstChild);
             } catch {}
             // After trimming, ensure we really are at the bottom if we intended to be
