@@ -83,7 +83,7 @@
       display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:18px;
     }
     .brand{display:flex; align-items:center; gap:12px}
-    .brand img{width:40px; height:40px}
+    .brand img{width:auto; height:40px}
     .brand h1{font-size:20px; margin:0; letter-spacing:.2px}
     .cta{
       display:flex; gap:10px; flex-wrap:wrap;
@@ -162,7 +162,7 @@
   <div class="wrap">
     <header>
       <div class="brand" aria-label="DeskChat">
-        <img src="https://deskchat.live/images/logoBlue.webp" width="40" height="40" alt="DeskChat logo">
+        <img src="https://deskchat.live/images/logoBlue.webp" width="40" height="auto" alt="DeskChat logo">
         <h1>DeskChat</h1>
         <span class="pill" style="margin-left:6px">Live Chat Wallpaper</span>
       </div>
@@ -184,8 +184,8 @@
             <strong>Wallpaper Engine</strong>
             <p class="subtle">Subscribe to the Steam Workshop item and see messages flow in.</p>
             <div class="btn-row">
-              <a class="btn" href="https://steamcommunity.com/sharedfiles/filedetails/?id=3570243529" target="_blank" rel="noopener" aria-label="Open Steam Workshop item">Open on Steam</a>
-              <a class="btn secondary" href="/wallpaper/index.html">Open Live Feed</a>
+              <a class="btn" href="https://steamcommunity.com/sharedfiles/filedetails/?id=3570251397" target="_blank" rel="noopener" aria-label="Open Steam Workshop item">Open on Steam</a>
+              <a class="btn secondary" href="https://bg.deskchat.live">Open Live Feed</a>
             </div>
           </div>
           <div class="panel" style="padding:14px">
@@ -202,7 +202,7 @@
           <div class="panel">
             <strong>How it works</strong>
             <ul class="list">
-              <li>Wallpaper fetches new messages every ~2.5s and shows ~30 recent ones.</li>
+              <li>Wallpaper fetches new messages every ~2.5s (adjustable) and shows 20 recent ones.</li>
               <li>Tray app sends posts to the API with a device ID (no account needed).</li>
               <li>Server filters profanity, rate-limits abuse, and keeps the feed fast.</li>
             </ul>
@@ -212,29 +212,22 @@
             <ul class="list">
               <li>No raw IPs stored by the app — only a hashed identifier server-side.</li>
               <li>Messages auto-purge on a rolling schedule.</li>
-              <li>Anonymous by default: you choose an optional nickname.</li>
+              <li>Just choose an nickname.</li>
             </ul>
           </div>
         </div>
 
-        <div class="panel" style="margin-top:12px">
-          <strong>Quick API peek</strong>
-          <pre class="code" aria-label="API example">
-GET  https://api.deskchat.live/api/messages?since_id=0&amp;limit=10
-POST https://api.deskchat.live/api/messages  (header: X-Device-Id &amp; JSON body)</pre>
-        </div>
-
         <div class="btn-row" style="margin-top:14px">
           <a class="btn" href="/downloads/TrayApp/deskchat-tray-stable-Setup.exe" download>Download Tray App</a>
-          <a class="btn secondary" href="https://steamcommunity.com/sharedfiles/filedetails/?id=3570243529" target="_blank" rel="noopener">Steam Workshop</a>
-          <a class="btn secondary" href="/wallpaper/index.html">Live Feed (web)</a>
+          <a class="btn secondary" href="https://steamcommunity.com/sharedfiles/filedetails/?id=3570251397" target="_blank" rel="noopener">Steam Workshop</a>
+          <a class="btn secondary" href="https://bg.deskchat.live">Live Feed (web)</a>
         </div>
       </section>
 
       <!-- Right: simple visual -->
       <aside class="panel-ghost" aria-hidden="true">
         <div>
-          <img src="https://deskchat.live/images/logoBlue.webp" alt="" width="96" height="96" style="opacity:.9; filter: drop-shadow(0 6px 16px rgba(74,163,255,.35)); margin-bottom:10px" />
+          <img src="https://deskchat.live/images/logoBlue.webp" alt="" width="96" height="auto" style="opacity:.9; filter: drop-shadow(0 6px 16px rgba(74,163,255,.35)); margin-bottom:10px" />
           <div style="font-size:14px">Lightweight • Fast • Privacy-friendly</div>
         </div>
       </aside>
@@ -260,16 +253,6 @@ POST https://api.deskchat.live/api/messages  (header: X-Device-Id &amp; JSON bod
           <summary>GIFs & emojis?</summary>
           <p>Emojis work (Win + .). Tenor GIF links can be pasted; the wallpaper will render lightweight embeds.</p>
         </details>
-      </div>
-
-      <div class="panel">
-        <h2 class="label">Changelog & Status</h2>
-        <p class="subtle">MVP live. Multiple rooms and richer media are “could-have” items planned for future updates.</p>
-        <p style="margin-top:8px">
-          <strong>Health:</strong>
-          <a href="https://api.deskchat.live/api/health" target="_blank" rel="noopener" aria-label="API health">API</a>
-          <span style="color:var(--ok); margin-left:6px">●</span>
-        </p>
       </div>
     </section>
 
