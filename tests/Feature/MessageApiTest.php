@@ -3,13 +3,28 @@
 namespace Tests\Feature;
 
 use App\Models\Message;
+use App\Support\FeedStore;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class MessageApiTest extends TestCase
 {
 	use RefreshDatabase;
+
+	protected function setUp(): void
+	{
+		parent::setUp();
+		// Ensure per-test clean slate for rate limiter and any cached state
+		try { Cache::flush(); } catch (\Throwable $e) { /* ignore */ }
+		// Also clear file-based feed artifacts to isolate tests
+		$dir = storage_path('app/messages');
+		if (!is_dir($dir)) { @mkdir($dir, 0775, true); }
+		@unlink($dir . '/spool.ndjson');
+		@unlink($dir . '/feed.json');
+		@unlink($dir . '/seq.txt');
+	}
 
 	private function deviceId(): string
 	{
@@ -24,6 +39,17 @@ class MessageApiTest extends TestCase
 		}
 		return $this->withHeaders(['X-Device-Id' => $deviceId])
 			->postJson('/api/messages', $payload);
+	}
+
+	private function lastSpoolRow(): ?array
+	{
+		$path = storage_path('app/messages/spool.ndjson');
+		if (!is_file($path)) return null;
+		$lines = @file($path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) ?: [];
+		if (empty($lines)) return null;
+		$last = $lines[count($lines) - 1];
+		$row = json_decode($last, true);
+		return is_array($row) ? $row : null;
 	}
 
 	public function test_health_ok(): void
@@ -126,12 +152,49 @@ class MessageApiTest extends TestCase
 	{
 		$veryLong = str_repeat('x', 200);
 		$this->withHeaders(['X-Device-Id' => $veryLong])
-			->postJson('/api/messages', ['content' => 'hoi'])
+			->postJson('/api/messages', ['content' => 'hoi', 'handle' => 'Test'])
 			->assertStatus(201);
 
-		$this->assertDatabaseCount('messages', 1);
-		$dev = Message::query()->firstOrFail()->device_id;
-		$this->assertSame(64, strlen($dev));
+		// No DB write in current design; assert spool contains truncated device_id
+		$row = $this->lastSpoolRow();
+		$this->assertIsArray($row);
+		$this->assertArrayHasKey('device_id', $row);
+		$this->assertSame(64, strlen($row['device_id']));
+	}
+
+	public function test_storage_failure_returns_500(): void
+	{
+		// Swap FeedStore with a throwing fake to simulate write failure
+		$fake = new class extends FeedStore {
+			public function nextId(): int { return 1; }
+			public function appendMessage(array $msg): void { throw new \RuntimeException('fail write'); }
+		};
+		$this->app->instance(FeedStore::class, $fake);
+
+		$this->withHeaders(['X-Device-Id' => $this->deviceId()])
+			->postJson('/api/messages', ['content' => 'boom', 'handle' => 'X'])
+			->assertStatus(500)
+			->assertJson(['ok' => false, 'error' => 'storage_failure']);
+	}
+
+	public function test_storage_unavailable_returns_500(): void
+	{
+		$dir = storage_path('app/messages');
+		if (!is_dir($dir)) { @mkdir($dir, 0775, true); }
+		// Make directory non-writable
+		$origPerms = null;
+		if (is_dir($dir)) {
+			$origPerms = fileperms($dir);
+			@chmod($dir, 0555);
+		}
+		try {
+			$this->withHeaders(['X-Device-Id' => $this->deviceId()])
+				->postJson('/api/messages', ['content' => 'hoi', 'handle' => 'Y'])
+				->assertStatus(500)
+				->assertJson(['ok' => false, 'error' => 'storage_unavailable']);
+		} finally {
+			if ($origPerms !== null) { @chmod($dir, $origPerms & 0777); }
+		}
 	}
 
 	public function test_rate_limiting_per_device_and_ip(): void

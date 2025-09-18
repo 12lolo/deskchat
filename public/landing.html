@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>DeskChat — Live Wallpaper & API</title>
+    <meta name="description" content="DeskChat is a lightweight, real‑time global chat feed you can pin as desktop wallpaper. Privacy‑friendly, file‑backed, and fast." />
+    <link rel="icon" href="/favicon.ico" />
+    <style>
+      :root {
+        --bg: #ffffff;
+        --fg: #1c1c1a;
+        --muted: #706f6c;
+        --panel: #fdfdfc;
+        --border: #e3e3e0;
+        --brand: #f53003;
+        --brand-contrast: #ff4433;
+        --btn-bg: #1b1b18;
+        --btn-fg: #ffffff;
+        --code-bg: #1b1b18;
+        --code-fg: #ffffff;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #0a0a0a;
+          --fg: #ededec;
+          --muted: #a1a09a;
+          --panel: #161615;
+          --border: #3e3e3a;
+          --brand: #ff4433;
+          --btn-bg: #eeeeec;
+          --btn-fg: #1c1c1a;
+          --code-bg: #0a0a0a;
+          --code-fg: #ededec;
+        }
+      }
+      * { box-sizing: border-box; }
+      html, body { height: 100%; }
+      body {
+        margin: 0;
+        font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+        background: var(--bg);
+        color: var(--fg);
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+      .wrap { display: grid; place-items: center; min-height: 100%; padding: 24px; }
+      .container { width: 100%; max-width: 1024px; display: grid; grid-template-columns: 1fr; gap: 16px; }
+      @media (min-width: 1024px) { .container { grid-template-columns: 1.1fr 0.9fr; } }
+      .panel {
+        padding: 24px; border: 1px solid var(--border); border-radius: 8px; background: var(--panel);
+        box-shadow: inset 0 0 0 1px rgba(26,26,0,0.04);
+      }
+      h1 { margin: 0 0 8px; font-size: 28px; line-height: 1.2; font-weight: 650; letter-spacing: -0.02em; }
+      h2 { margin: 24px 0 8px; font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; font-weight: 600; color: var(--brand); }
+      p { margin: 0 0 12px; color: var(--muted); line-height: 1.55; font-size: 14px; }
+      a { color: var(--brand); text-decoration: underline; text-underline-offset: 3px; }
+      .btn { display: inline-block; padding: 8px 16px; border-radius: 6px; border: 1px solid #000; background: var(--btn-bg); color: var(--btn-fg); text-decoration: none; font-weight: 600; }
+      .btn.secondary { background: transparent; color: var(--fg); border-color: color-mix(in srgb, var(--fg) 20%, transparent); }
+      .grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
+      @media (min-width: 480px) { .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+      pre { margin: 0; padding: 12px; background: var(--code-bg); color: var(--code-fg); border-radius: 6px; overflow: auto; font-size: 12px; line-height: 1.5; }
+      footer { margin-top: 24px; font-size: 12px; color: var(--muted); }
+      /* Right column simple illustration */
+      .art { display: none; }
+      @media (min-width: 1024px) { .art { display: block; } }
+      .artcard { border: 1px dashed var(--border); border-radius: 8px; padding: 16px; height: 100%; display: grid; place-items: center; color: var(--muted); }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <main class="container">
+        <section class="panel">
+          <h1>DeskChat</h1>
+          <p>A lightweight, real‑time global chat feed you can pin right onto your desktop as live wallpaper. Privacy‑friendly, file‑backed, and fast. No account required—just pick a handle and talk.</p>
+
+          <h2>Install the Live Wallpaper</h2>
+          <p>
+            Add the DeskChat live feed to your desktop via Steam Workshop (Wallpaper Engine):
+            <br />
+            <a href="https://steamcommunity.com/sharedfiles/filedetails/?id=3569202732" target="_blank" rel="noopener">Steam Workshop Item #3569202732</a>
+          </p>
+
+          <h2>Tray App / Installer</h2>
+          <div class="panel" style="padding: 12px;">
+            <p style="margin-bottom: 6px; color: var(--fg); font-weight: 600;">Windows</p>
+            <p>Download the latest stable tray companion for Windows:</p>
+            <div style="margin-top: 8px;">
+              <a class="btn" href="/downloads/TrayApp/deskchat-tray-stable-Setup.exe" download>Install DeskChat for Windows</a>
+            </div>
+
+            <p style="margin-top: 16px; margin-bottom: 6px; color: var(--fg); font-weight: 600;">macOS &amp; Linux</p>
+            <p>Coming soon. For now, you can use the Steam Wallpaper above to view the live feed on your desktop.</p>
+          </div>
+
+          <h2>API Quick Start</h2>
+          <pre># Post a message
+curl -X POST https://api.deskchat.live/api/messages \
+  -H 'Content-Type: application/json' \
+  -H 'X-Device-Id: DEMO-123' \
+  -d '{"handle":"you","content":"hello world"}'
+
+# Peek last id (lightweight)
+curl https://api.deskchat.live/api/messages/peek
+
+# Fetch recent messages
+curl 'https://api.deskchat.live/api/messages?limit=50'</pre>
+
+          <h2>Open the Live Feed</h2>
+          <div class="grid">
+            <a class="btn" href="/wallpaper/index.html">Open Live Feed</a>
+            <a class="btn secondary" href="https://api.deskchat.live/api/health" target="_blank" rel="noopener">API Health</a>
+          </div>
+
+          <footer>
+            © <span id="year"></span> DeskChat. All rights reserved.
+          </footer>
+        </section>
+
+        <aside class="art">
+          <div class="artcard">DeskChat — simple, fast, privacy‑friendly.</div>
+        </aside>
+      </main>
+    </div>
+
+    <script>
+      document.getElementById('year').textContent = new Date().getFullYear();
+    </script>
+  </body>
+  </html>

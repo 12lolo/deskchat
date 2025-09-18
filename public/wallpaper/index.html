@@ -3,7 +3,8 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>deskchat live — Wallpaper</title>
+    <title>Deskchat live — Wallpaper</title>
+
     <style>
         :root {
             --bg1: #0f172a; /* slate-900 */
@@ -111,7 +112,7 @@
             padding: 0 8px calc(var(--fade-h) + 6px) 8px;
         }
         #feed::-webkit-scrollbar { display: none; }
- 
+
 
         .msg {
             max-width: 100%; width: 100%; box-sizing: border-box; padding: calc(8px * var(--msg-scale, 1)) calc(12px * var(--msg-scale, 1)); border-radius: 12px;
@@ -152,16 +153,17 @@
         }
         .watermark { position: absolute; bottom: 2vh; left: 5vw; opacity: 0.3; color: var(--muted); font-size: 12px; }
 
-        /* Embeds (smaller, no cropping) */
-        :root { --embed-min-h: 90px; --embed-max-h: 30vh; }
-        .embed { margin-top: 6px; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 14px -6px var(--shadow); width: 100%; position: relative; background: rgba(255,255,255,0.03); }
-        /* Tenor wrapper: allow internal script to size but clamp height */
-        .embed.tenor { width: 100%; max-width: 100%; min-height: var(--embed-min-h); max-height: var(--embed-max-h); display: flex; align-items: center; justify-content: center; }
-        .embed.tenor .tenor-gif-embed { max-height: var(--embed-max-h) !important; width: 100% !important; }
-        /* Direct media */
-        .embed-media { display: block; width: 100%; height: 100%; object-fit: contain; background: rgba(255,255,255,0.04); max-height: var(--embed-max-h); }
-        .embed img.embed-media { min-height: var(--embed-min-h); height: auto; }
-        video.embed-media { max-height: var(--embed-max-h); height: auto; }
+    /* Embeds (smaller, no cropping) */
+    :root { --embed-min-h: 90px; --embed-max-h: 30vh; }
+    .embed { margin-top: 6px; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 14px -6px var(--shadow); width: 100%; position: relative; background: rgba(255,255,255,0.03); }
+    /* Tenor wrapper: allow internal script to size but clamp height; scale with message size */
+    .embed.tenor { width: 100%; max-width: 100%; min-height: calc(var(--embed-min-h) * var(--msg-scale, 1)); max-height: calc(var(--embed-max-h) * var(--msg-scale, 1)); display: flex; align-items: center; justify-content: center; }
+    .embed.tenor .tenor-gif-embed { max-height: calc(var(--embed-max-h) * var(--msg-scale, 1)) !important; width: 100% !important; }
+    .embed.tenor iframe { max-height: calc(var(--embed-max-h) * var(--msg-scale, 1)) !important; width: 100% !important; }
+    /* Direct media scale with message size */
+    .embed-media { display: block; width: 100%; height: 100%; object-fit: contain; background: rgba(255,255,255,0.04); max-height: calc(var(--embed-max-h) * var(--msg-scale, 1)); }
+    .embed img.embed-media { min-height: calc(var(--embed-min-h) * var(--msg-scale, 1)); height: auto; }
+    video.embed-media { max-height: calc(var(--embed-max-h) * var(--msg-scale, 1)); height: auto; }
         /* Avoid layout jump if image loads very tall */
         .embed.pending { aspect-ratio: 16 / 9; }
         @media (prefers-reduced-motion: reduce) {
@@ -170,6 +172,8 @@
             .msg.new { animation: none; }
         }
     </style>
+</head>
+<body>
     <button class="settings-btn" id="settingsBtn" title="Settings" tabindex="0" aria-label="Settings">
         <svg viewBox="0 0 24 24"><path d="M12 15.5A3.5 3.5 0 1 0 12 8.5a3.5 3.5 0 0 0 0 7zm7.43-2.9l1.77-1.02a1 1 0 0 0 .37-1.36l-1.7-2.94a1 1 0 0 0-1.28-.45l-1.77 1.02a7.03 7.03 0 0 0-1.52-.88l-.27-1.97A1 1 0 0 0 14.04 4h-3.08a1 1 0 0 0-.99.85l-.27 1.97a7.03 7.03 0 0 0-1.52.88l-1.77-1.02a1 1 0 0 0-1.28.45l-1.7 2.94a1 1 0 0 0 .37 1.36l1.77 1.02c-.06.32-.1.65-.13.99s-.04.67-.04 1.01.01.68.04 1.01c.03.34.07.67.13.99l-1.77 1.02a1 1 0 0 0-.37 1.36l1.7 2.94a1 1 0 0 0 1.28.45l1.77-1.02c.47.34.98.64 1.52.88l.27 1.97a1 1 0 0 0 .99.85h3.08a1 1 0 0 0 .99-.85l.27-1.97c.54-.24 1.05-.54 1.52-.88l1.77 1.02a1 1 0 0 0 1.28-.45l1.7-2.94a1 1 0 0 0-.37-1.36l-1.77-1.02c.06-.32.1-.65.13-.99.03-.33.04-.67.04-1.01s-.01-.68-.04-1.01a7.6 7.6 0 0 0-.13-.99z"/></svg>
     </button>
@@ -484,7 +488,7 @@
                     }
                     backoff = POLL_MS; // reset on success
                 } catch (err) {
-                    log('poll error:', err);
+                    console.warn('poll error:', err);
                     setStatus('Error — backing off');
                     backoff = Math.min(Math.max(backoff * 1.6, POLL_MS), 10000);
                 } finally {
@@ -510,7 +514,7 @@
             } catch {}
 
             document.addEventListener('visibilitychange', () => {
-                if (visible()) { setStatus('Resumed'); backoff = POLL_MS; 
+                if (visible()) { setStatus('Resumed'); backoff = POLL_MS;
                     // force bottom for a short window after tab becomes visible
                     forceBottomUntil = Date.now() + 1500;
                     feed.classList.add('no-smooth');

@@ -52,71 +52,54 @@
         <div class="flex items-center justify-center w-full transition-opacity opacity-100 duration-750 lg:grow starting:opacity-0">
             <main class="flex max-w-[335px] w-full flex-col-reverse lg:max-w-4xl lg:flex-row">
                 <div class="text-[13px] leading-[20px] flex-1 p-6 pb-12 lg:p-20 bg-white dark:bg-[#161615] dark:text-[#EDEDEC] shadow-[inset_0px_0px_0px_1px_rgba(26,26,0,0.16)] dark:shadow-[inset_0px_0px_0px_1px_#fffaed2d] rounded-bl-lg rounded-br-lg lg:rounded-tl-lg lg:rounded-br-none">
-                    <h1 class="mb-1 font-medium">Let's get started</h1>
-                    <p class="mb-2 text-[#706f6c] dark:text-[#A1A09A]">Laravel has an incredibly rich ecosystem. <br>We suggest starting with the following.</p>
-                    <ul class="flex flex-col mb-4 lg:mb-6">
-                        <li class="flex items-center gap-4 py-2 relative before:border-l before:border-[#e3e3e0] dark:before:border-[#3E3E3A] before:top-1/2 before:bottom-0 before:left-[0.4rem] before:absolute">
-                            <span class="relative py-1 bg-white dark:bg-[#161615]">
-                                <span class="flex items-center justify-center rounded-full bg-[#FDFDFC] dark:bg-[#161615] shadow-[0px_0px_1px_0px_rgba(0,0,0,0.03),0px_1px_2px_0px_rgba(0,0,0,0.06)] w-3.5 h-3.5 border dark:border-[#3E3E3A] border-[#e3e3e0]">
-                                    <span class="rounded-full bg-[#dbdbd7] dark:bg-[#3E3E3A] w-1.5 h-1.5"></span>
-                                </span>
-                            </span>
-                            <span>
-                                Read the
-                                <a href="https://laravel.com/docs" target="_blank" class="inline-flex items-center space-x-1 font-medium underline underline-offset-4 text-[#f53003] dark:text-[#FF4433] ml-1">
-                                    <span>Documentation</span>
-                                    <svg
-                                        width="10"
-                                        height="11"
-                                        viewBox="0 0 10 11"
-                                        fill="none"
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        class="w-2.5 h-2.5"
-                                    >
-                                        <path
-                                            d="M7.70833 6.95834V2.79167H3.54167M2.5 8L7.5 3.00001"
-                                            stroke="currentColor"
-                                            stroke-linecap="square"
-                                        />
-                                    </svg>
-                                </a>
-                            </span>
-                        </li>
-                        <li class="flex items-center gap-4 py-2 relative before:border-l before:border-[#e3e3e0] dark:before:border-[#3E3E3A] before:bottom-1/2 before:top-0 before:left-[0.4rem] before:absolute">
-                            <span class="relative py-1 bg-white dark:bg-[#161615]">
-                                <span class="flex items-center justify-center rounded-full bg-[#FDFDFC] dark:bg-[#161615] shadow-[0px_0px_1px_0px_rgba(0,0,0,0.03),0px_1px_2px_0px_rgba(0,0,0,0.06)] w-3.5 h-3.5 border dark:border-[#3E3E3A] border-[#e3e3e0]">
-                                    <span class="rounded-full bg-[#dbdbd7] dark:bg-[#3E3E3A] w-1.5 h-1.5"></span>
-                                </span>
-                            </span>
-                            <span>
-                                Watch video tutorials at
-                                <a href="https://laracasts.com" target="_blank" class="inline-flex items-center space-x-1 font-medium underline underline-offset-4 text-[#f53003] dark:text-[#FF4433] ml-1">
-                                    <span>Laracasts</span>
-                                    <svg
-                                        width="10"
-                                        height="11"
-                                        viewBox="0 0 10 11"
-                                        fill="none"
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        class="w-2.5 h-2.5"
-                                    >
-                                        <path
-                                            d="M7.70833 6.95834V2.79167H3.54167M2.5 8L7.5 3.00001"
-                                            stroke="currentColor"
-                                            stroke-linecap="square"
-                                        />
-                                    </svg>
-                                </a>
-                            </span>
-                        </li>
-                    </ul>
-                    <ul class="flex gap-3 text-sm leading-normal">
+                    <h1 class="mb-2 font-medium text-2xl tracking-tight">DeskChat</h1>
+                    <p class="mb-4 text-[#706f6c] dark:text-[#A1A09A]">A lightweight, real‑time global chat feed you can pin right onto your desktop as live wallpaper. Privacy‑friendly, file‑backed, and fast. No account required—just pick a handle and talk.</p>
+
+                    <h2 class="mt-4 mb-2 font-medium text-sm uppercase tracking-wide text-[#f53003] dark:text-[#FF4433]">Install the Live Wallpaper</h2>
+                    <p class="mb-3">Add the DeskChat live feed to your desktop via Steam Workshop (Wallpaper Engine):<br>
+                        <a href="https://steamcommunity.com/sharedfiles/filedetails/?id=3569202732" target="_blank" class="underline underline-offset-4 font-medium text-[#f53003] dark:text-[#FF4433]">Steam Workshop Item #3569202732</a>
+                    </p>
+
+                    <h2 class="mt-6 mb-2 font-medium text-sm uppercase tracking-wide text-[#f53003] dark:text-[#FF4433]">Tray App / Installer</h2>
+                    <div class="mb-4 p-3 rounded-sm border border-[#e3e3e0] dark:border-[#3E3E3A] bg-[#FDFDFC] dark:bg-[#0a0a0a]">
+                        <p class="mb-1 font-medium">Windows</p>
+                        <p class="text-[#706f6c] dark:text-[#A1A09A]">Download the latest stable tray companion for Windows:</p>
+                        <div class="mt-2">
+                            <a href="/downloads/TrayApp/deskchat-tray-stable-Setup.exe" download class="inline-block px-5 py-1.5 bg-[#1b1b18] hover:bg-black border border-black text-white rounded-sm dark:bg-[#eeeeec] dark:text-[#1C1C1A] dark:hover:bg-white dark:border-[#eeeeec] dark:hover:border-white">Install DeskChat for Windows</a>
+                        </div>
+
+                        <p class="mt-4 mb-1 font-medium">macOS & Linux</p>
+                        <p class="text-[#706f6c] dark:text-[#A1A09A]">Coming soon. For now, you can use the Steam Wallpaper above to view the live feed on your desktop.</p>
+                    </div>
+
+                    <h2 class="mt-4 mb-2 font-medium text-sm uppercase tracking-wide text-[#f53003] dark:text-[#FF4433]">API Quick Start</h2>
+                    <div class="mb-4 text-[12px] leading-[18px] font-mono bg-[#1b1b18] dark:bg-[#0a0a0a] text-white p-3 rounded-sm overflow-auto">
+<pre class="whitespace-pre-wrap"># Post a message
+curl -X POST https://api.deskchat.live/api/messages \
+  -H 'Content-Type: application/json' \
+  -H 'X-Device-Id: DEMO-123' \
+  -d '{"handle":"you","content":"hello world"}'
+
+# Peek last id (lightweight)
+curl https://api.deskchat.live/api/messages/peek
+
+# Fetch recent messages
+curl 'https://api.deskchat.live/api/messages?limit=50'</pre>
+                    </div>
+
+                    <h2 class="mt-4 mb-2 font-medium text-sm uppercase tracking-wide text-[#f53003] dark:text-[#FF4433]">Why so minimal?</h2>
+                    <p class="mb-4 text-[#706f6c] dark:text-[#A1A09A]">DeskChat intentionally avoids heavy infrastructure: messages are streamed through a lean, append‑only file feed with rate limiting and profanity filtering. This keeps latency low, scaling simple, and privacy straightforward.</p>
+
+                    <ul class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm leading-normal mt-4">
                         <li>
-                            <a href="https://cloud.laravel.com" target="_blank" class="inline-block dark:bg-[#eeeeec] dark:border-[#eeeeec] dark:text-[#1C1C1A] dark:hover:bg-white dark:hover:border-white hover:bg-black hover:border-black px-5 py-1.5 bg-[#1b1b18] rounded-sm border border-black text-white text-sm leading-normal">
-                                Deploy now
-                            </a>
+                            <a href="/wallpaper/index.html" class="inline-block px-5 py-1.5 bg-[#1b1b18] hover:bg-black border border-black dark:bg-[#eeeeec] dark:text-[#1C1C1A] dark:hover:bg-white rounded-sm text-white dark:border-[#eeeeec] dark:hover:border-white">Open Live Feed</a>
+                        </li>
+                        <li>
+                            <a href="https://api.deskchat.live/api/health" target="_blank" class="inline-block px-5 py-1.5 border border-[#19140035] dark:border-[#3E3E3A] hover:border-black dark:hover:border-white rounded-sm">API Health</a>
                         </li>
                     </ul>
+
+                    <p class="mt-8 text-[11px] text-[#706f6c] dark:text-[#A1A09A]">© {{ date('Y') }} DeskChat. All rights reserved.</p>
                 </div>
                 <div class="bg-[#fff2f2] dark:bg-[#1D0002] relative lg:-ml-px -mb-px lg:mb-0 rounded-t-lg lg:rounded-t-none lg:rounded-r-lg aspect-[335/376] lg:aspect-auto w-full lg:w-[438px] shrink-0 overflow-hidden">
                     {{-- Laravel Logo --}}
